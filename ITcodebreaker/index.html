@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AR Code Breaker - Maejo IT</title>
+
+    <!-- MediaPipe CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <video id="webcam" autoplay playsinline muted></video>
+    <div id="grid-overlay"></div>
+
+    <div id="ui-layer">
+
+        <div id="status-bar">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">INITIALIZING CAMERA...</span>
+            <button id="mute-btn" title="Toggle sound">🔊</button>
+        </div>
+
+        <div id="hud" style="display: none;">
+            <div class="hud-row">
+                <div class="hud-text">SCORE: <span id="score-display">0</span></div>
+                <div id="combo-text">COMBO x<span id="combo-display">2</span></div>
+                <div class="hud-text">TIME: <span id="time-display">10.0</span>s</div>
+            </div>
+            <div id="level-dots"></div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div style="font-size: 3.5rem; margin-bottom: -6px;">🔐</div>
+            <h1>IT AR<br>CODE BREAKER</h1>
+            <p class="subtitle">HAND TRACKING EDITION</p>
+
+            <div class="hologram-box" style="margin-bottom: 30px; font-size: 0.9rem;">
+                <p>ยกมือขึ้นหน้ากล้อง</p>
+                <p>ใช้นิ้วชี้เพื่อควบคุม Cursor</p>
+                <p>ชี้ค้างไว้ หรือ "หยิก" นิ้วโป้ง+นิ้วชี้ เพื่อ "คลิก"</p>
+            </div>
+
+            <div class="hoverable" id="btn-start" style="opacity: 0.5; pointer-events: none;">
+                [ START AR EXPERIENCE ]<br>
+                <small style="font-size: 0.7rem; color: #aaa;">Waiting for Hand Detection...</small>
+            </div>
+            <p class="fallback-hint" id="fallback-hint" style="display:none;">ไม่พบกล้อง/มือ? แตะปุ่มด้วยนิ้วบนหน้าจอได้เลย</p>
+        </div>
+
+        <!-- Difficulty Screen -->
+        <div id="difficulty-screen" class="screen">
+            <h1 style="font-size: 1.8rem;">เลือกระดับความยาก</h1>
+            <p class="subtitle" style="margin-bottom: 20px;">SELECT DIFFICULTY</p>
+            <div class="diff-grid">
+                <div class="hoverable diff-btn" data-diff="easy">🟢 EASY<br><small style="font-size:0.65rem;">8 คำถาม · 12 วิ</small></div>
+                <div class="hoverable diff-btn" data-diff="medium">🟡 MEDIUM<br><small style="font-size:0.65rem;">10 คำถาม · 10 วิ</small></div>
+                <div class="hoverable diff-btn" data-diff="hard">🔴 HARD<br><small style="font-size:0.65rem;">10 คำถาม · 7 วิ</small></div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div style="font-size: 1.6rem; margin-bottom: 8px;" id="level-label">🔐 LEVEL 1</div>
+
+            <div class="hologram-box" style="width: 100%; min-height: 140px; display: flex; flex-direction: column; justify-content: center;">
+                <div id="question-text" style="font-size: 1.35rem; font-weight: bold; white-space: pre-line;"></div>
+            </div>
+
+            <div id="timer-container"><div id="timer-bar"></div></div>
+
+            <div class="answers-grid" id="answers-container"></div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <h1>🎉 COMPLETE!</h1>
+            <p style="font-size: 1.3rem;">YOUR SCORE</p>
+            <p style="font-size: 3.2rem; font-weight: bold; color: var(--primary); text-shadow: 0 0 20px var(--primary);" id="final-score">0</p>
+
+            <div style="margin: 10px 0;">
+                <p style="font-size: 0.85rem; letter-spacing: 1px;">PROGRAMMING SKILL</p>
+                <div class="stars" id="star-rating">★★★★★</div>
+            </div>
+
+            <div id="leaderboard">
+                <div style="font-weight:bold; color: var(--primary);">🏆 TOP SCORES (this session)</div>
+                <ul id="leaderboard-list"></ul>
+            </div>
+
+            <div class="cta-box">
+                <p style="font-weight: bold; color: var(--success); margin-bottom: 5px;">💻 สนใจเทคโนโลยี?</p>
+                <p>มาเรียนรู้และสร้างอนาคตไปกับ<br>สาขาวิชาเทคโนโลยีสารสนเทศ<br>มหาวิทยาลัยแม่โจ้</p>
+            </div>
+
+            <div class="hoverable" id="btn-restart" style="margin-top: 18px;">[ PLAY AGAIN ]</div>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+    <div id="particle-layer"></div>
+
+    <div id="hand-cursor">
+        <svg id="cursor-ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25"></circle></svg>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

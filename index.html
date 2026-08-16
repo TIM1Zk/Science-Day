@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IT Maejo 2570 • Interactive Game Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Outfit:wght@500;700;800;900&family=Chakra+Petch:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #040711;
+      --card-bg: rgba(13, 20, 36, 0.72);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-cyan: #00f0ff;
+      --accent-green: #00ff88;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ff007f;
+      --accent-amber: #ffb703;
+      --accent-orange: #ff6b35;
+      --accent-blue: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-th: 'Kanit', sans-serif;
+      --font-en: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 25%, rgba(139, 92, 246, 0.10) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(0, 255, 136, 0.06) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      color: var(--text);
+      font-family: var(--font-th);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 24px 60px;
+    }
+
+    .hero-header {
+      text-align: center;
+      max-width: 900px;
+      margin-bottom: 36px;
+    }
+
+    .badge-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.28);
+      color: var(--accent-cyan);
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-top span.dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    .title {
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 25%, #c4b5fd 65%, #00f0ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+      line-height: 1.25;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    /* Category Filter / Stats Ribbon */
+    .feature-ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 36px;
+      max-width: 1000px;
+    }
+
+    .ribbon-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 1280px;
+      margin-bottom: 48px;
+      align-items: stretch;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px 22px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
+      text-decoration: none;
+      color: inherit;
+      min-height: 400px;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--card-accent, #00f0ff);
+      opacity: 0.85;
+      transition: all 0.3s;
+    }
+
+    .game-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--card-accent, #00f0ff);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 28px rgba(0, 240, 255, 0.18);
+    }
+
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-icon {
+      font-size: 2.6rem;
+      line-height: 1;
+    }
+
+    .card-badge {
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      letter-spacing: 0.5px;
+    }
+
+    .card-pillar {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--card-accent, #00f0ff);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .card-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+      line-height: 1.35;
+    }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.58;
+      margin-bottom: 18px;
+      flex: 1;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .tag-pill {
+      font-size: 0.70rem;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 7px;
+      border-radius: 6px;
+      color: #cbd5e1;
+    }
+
+    .btn-play {
+      background: var(--card-accent, #00f0ff);
+      color: #050811;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .game-card:hover .btn-play {
+      transform: scale(1.05);
+      box-shadow: 0 4px 14px rgba(0, 240, 255, 0.35);
+    }
+
+    .footer-curriculum {
+      text-align: center;
+      max-width: 960px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 24px 32px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    .footer-curriculum strong {
+      color: #fff;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link-btn {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-bottom: 1px dashed rgba(0, 240, 255, 0.4);
+      padding-bottom: 2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .footer-link-btn:hover {
+      color: #fff;
+      border-color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 24px 16px 40px; }
+      .title { font-size: 1.8rem; }
+      .games-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero-header">
+    <div class="badge-top">
+      <span class="dot"></span>
+      <span>MAEJO UNIVERSITY • IT 2027</span>
+    </div>
+    <h1 class="title">ศูนย์รวมเกมทดลองทักษะไอทียุคใหม่</h1>
+    <p class="subtitle">
+      สัมผัสประสบการณ์เรียนรู้ผ่านเกมอินเตอร์แอคทีฟ รองรับทั้งการเล่นด้วย <strong>เมาส์ / จอสัมผัส</strong> และ <strong>AI Hand & Pose Tracking (กล้องเว็บแคม)</strong> เพื่อทำความรู้จักหลักสูตร วท.บ. เทคโนโลยีสารสนเทศ แม่โจ้
+    </p>
+  </header>
+
+  <!-- Feature Ribbon -->
+  <div class="feature-ribbon">
+    <div class="ribbon-item">🎮 รวม 8 เกมอินเตอร์แอคทีฟ</div>
+    <div class="ribbon-item">🖐️ รองรับ MediaPipe AI Hand Tracking</div>
+    <div class="ribbon-item">🧍 Full Body Pose Tracking</div>
+    <div class="ribbon-item">🖱️ Touch & Mouse Friendly</div>
+    <div class="ribbon-item">🌱 4 Strategic Pillars & Green IT</div>
+  </div>
+
+  <div class="games-grid">
+
+    <!-- Game 1: Bug Buster -->
+    <a href="BugBuster/index.html" class="game-card" style="--card-accent: #ff3366;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">🛡️</span>
+          <span class="card-badge">SECTOR 01</span>
+        </div>
+        <div class="card-pillar">Pillar 1: Automated Testing & SDLC</div>
+        <h2 class="card-title">Bug Buster & Automated Tester</h2>
+        <p class="card-desc">
+          สวมบทเป็น Quality-First Developer ตรวจจับและสกัดกั้นบั๊ก (Syntax Error, Memory Leak, SQL Injection) ก่อนระบบขึ้นสู่ Production!
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🖐️ Hand AI</span>
+          <span class="tag-pill">🖱️ Mouse</span>
+          <span class="tag-pill">⚡ Action</span>
+        </div>
+        <div class="btn-play" style="background: #ff3366; color: #fff;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 2: AI Prompt & Logic Match -->
+    <a href="AIMatch/index.html" class="game-card" style="--card-accent: #8b5cf6;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">🤖</span>
+          <span class="card-badge">SECTOR 02</span>
+        </div>
+        <div class="card-pillar">Pillar 3 & 4: AI Driven & Smart Agri-Tech</div>
+        <h2 class="card-title">AI Prompt & Logic Match</h2>
+        <p class="card-desc">
+          วิเคราะห์ความต้องการทางธุรกิจจริง จับคู่การ์ดโมดูล AI, Cloud IoT, Cyber Security และ BCG เพื่อปลดล็อกเส้นทางอาชีพในฝัน
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🖐️ Drag & Drop</span>
+          <span class="tag-pill">🧠 Logic</span>
+          <span class="tag-pill">🌱 BCG</span>
+        </div>
+        <div class="btn-play" style="background: #8b5cf6; color: #fff;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 3: Code Block Collector -->
+    <a href="CodeBlock/index.html" class="game-card" style="--card-accent: #00f0ff;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">🧩</span>
+          <span class="card-badge">SECTOR 03</span>
+        </div>
+        <div class="card-pillar">Pillar 1 & 2: Hands-on & Agile Coding</div>
+        <h2 class="card-title">Code Block Collector</h2>
+        <p class="card-desc">
+          เกมคีบบล็อกคำสั่งโปรแกรมมิ่ง (Loop, Logic, Branching) นำทางหุ่นยนต์สู่อาชีพและภารกิจไอทีแม่โจ้ มีให้เล่น 3 ด่านความท้าทาย
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🖐️ Pinch Control</span>
+          <span class="tag-pill">🧩 3 Levels</span>
+        </div>
+        <div class="btn-play">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 4: Quiz Game -->
+    <a href="Qustion/index.html" class="game-card" style="--card-accent: #00ff88;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">📝</span>
+          <span class="card-badge">SECTOR 04</span>
+        </div>
+        <div class="card-pillar">Curriculum Knowledge Quiz</div>
+        <h2 class="card-title">IT Curriculum Quiz Challenge</h2>
+        <p class="card-desc">
+          ตอบคำถามความรู้รอบตัวเกี่ยวกับ 4 เสาหลักกลยุทธ์ และเส้นทางการเรียนรู้ 4 ปีของหลักสูตรไอที แม่โจ้ ชิงตำแหน่ง Top Rank
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">💡 Q&A</span>
+          <span class="tag-pill">🏆 Score Board</span>
+        </div>
+        <div class="btn-play" style="background: #00ff88; color: #070a14;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 5: CodeFlow Logic Simulator -->
+    <a href="CodeFlow/index.html" class="game-card" style="--card-accent: #ffb703;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">⚡</span>
+          <span class="card-badge">SECTOR 05</span>
+        </div>
+        <div class="card-pillar">Algorithm & Logic Animator</div>
+        <h2 class="card-title">CodeFlow · Logic Animator</h2>
+        <p class="card-desc">
+          5 โลกภารกิจ: ฟาร์ม IoT, โดรนส่งของ, Cyber Security, ครัวหุ่นยนต์, และ Route Finder เรียงบล็อก Flowchart แล้วรันจำลองระบบสด
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🎮 5 Worlds</span>
+          <span class="tag-pill">🖐️ Camera Hand</span>
+        </div>
+        <div class="btn-play" style="background: #ffb703; color: #050811;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 6: Packet Hero SOC Defense -->
+    <a href="PacketHero/index.html" class="game-card" style="--card-accent: #3b82f6;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">🛰️</span>
+          <span class="card-badge">SECTOR 06</span>
+        </div>
+        <div class="card-pillar">Cyber Security & SOC Defense</div>
+        <h2 class="card-title">Packet Hero · Firewall Defense</h2>
+        <p class="card-desc">
+          สวมบทผู้ดูแลระบบรักษาความปลอดภัยเครือข่าย สกัดกั้น DDoS, Malware และ Packet อันตราย ปล่อยเฉพาะข้อมูลที่ปลอดภัยผ่าน Gateway
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🔐 Cyber Sec</span>
+          <span class="tag-pill">🛰️ Packet Routing</span>
+        </div>
+        <div class="btn-play" style="background: #3b82f6; color: #fff;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 7: AR PC Builder -->
+    <a href="PcBuilding/index.html" class="game-card" style="--card-accent: #34eaff;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">🖥️</span>
+          <span class="card-badge">SECTOR 07</span>
+        </div>
+        <div class="card-pillar">Hardware & Systems Architecture</div>
+        <h2 class="card-title">AR PC Builder</h2>
+        <p class="card-desc">
+          ประกอบคอมพิวเตอร์บนเมนบอร์ดเสมือนจริงในโหมด AR ด้วยมือเปล่า (กำมือ = หยิบ, แบมือ = วาง) พร้อมเกร็ดความรู้ Hardware ทุกชิ้นส่วน
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🖐️ AR Gesture</span>
+          <span class="tag-pill">⚙️ PC Hardware</span>
+        </div>
+        <div class="btn-play" style="background: #34eaff; color: #050811;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 8: AR Code Breaker -->
+    <a href="ITcodebreaker/index.html" class="game-card" style="--card-accent: #00ffff;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">🔓</span>
+          <span class="card-badge">SECTOR 08</span>
+        </div>
+        <div class="card-pillar">AR Cryptography & Coding Challenge</div>
+        <h2 class="card-title">IT AR Code Breaker</h2>
+        <p class="card-desc">
+          ท้าทายตรรกะการถอดรหัสและคำถามโปรแกรมมิ่งแบบ Hologram AR ใช้นิ้วชี้เล็งเป้าและจีบนิ้วเพื่อตอบคำถามชิงคะแนน
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🖐️ Hologram AR</span>
+          <span class="tag-pill">🔐 Cipher Logic</span>
+        </div>
+        <div class="btn-play" style="background: #00ffff; color: #050811;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+    <!-- Game 9: 67 Game (Pose Tracking) -->
+    <a href="67game/index.html" class="game-card" style="--card-accent: #ff0055;">
+      <div class="card-top">
+        <div class="card-header-flex">
+          <span class="card-icon">⚡</span>
+          <span class="card-badge">SECTOR 09</span>
+        </div>
+        <div class="card-pillar">Pose Tracking & High-Speed Action</div>
+        <h2 class="card-title">เกมสลัดแขนทะลุขีดจำกัด!</h2>
+        <p class="card-desc">
+          ท้าทายความเร็วและปฏิกิริยาตอบสนองใน 20 วินาที! สลัดแขนข้ามเส้นกลางจอด้วยระบบ MediaPipe Pose Tracking พร้อมระบบตัดการสั่น Hysteresis
+        </p>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag-pill">🧍 Pose Tracking</span>
+          <span class="tag-pill">⏱️ 20s Rush</span>
+        </div>
+        <div class="btn-play" style="background: #ff0055; color: #fff;">เล่นเลย ➔</div>
+      </div>
+    </a>
+
+  </div>
+
+  <footer class="footer-curriculum">
+    🌿 <strong>หลักสูตร วท.บ. เทคโนโลยีสารสนเทศ มหาวิทยาลัยแม่โจ้ (ฉบับปรับปรุง พ.ศ. 2570)</strong><br>
+    มุ่งสร้าง "Quality-First Developer" ที่เชี่ยวชาญ Automated Testing, AI Integration, Cloud Native, Cyber Security และ Green IT (BCG & IWA)
+    <div class="footer-links">
+      <a href="Document.md" class="footer-link-btn" target="_blank">📖 เอกสารสรุปข้อมูลระบบและหลักสูตร (Document.md)</a>
+    </div>
+  </footer>
+
+</body>
+</html>

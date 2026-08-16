@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR PC Builder — Maejo IT Open House</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- ===== AR CAMERA BACKGROUND ===== -->
+  <video id="video" autoplay playsinline muted></video>
+  <div id="bgFallback"></div>
+  <div id="scan"></div>
+  <div id="vignette"></div>
+  <canvas id="handCanvas"></canvas>
+
+  <!-- ===== TOP HUD ===== -->
+  <div id="topbar">
+    <div class="brand">
+      <span class="kicker">Maejo University · IT Program</span>
+      <span class="title">AR PC BUILDER</span>
+    </div>
+    <div class="hud">
+      <div class="hud-chip time" id="timeChip">
+        <div class="label">เวลา</div>
+        <div class="value" id="timeValue">90</div>
+      </div>
+      <div class="hud-chip score" id="scoreChip">
+        <div class="label">คะแนน</div>
+        <div class="value" id="scoreValue">0</div>
+      </div>
+    </div>
+    <button id="hintBtn" title="ขอคำใบ้">
+      💡 คำใบ้ <span class="count" id="hintCount">3</span>
+    </button>
+  </div>
+
+  <div id="modeTag" class="cam-off">
+    <span class="dot"></span>
+    <span id="modeTagText">กำลังเปิดกล้อง…</span>
+  </div>
+
+  <!-- ===== MOTHERBOARD ===== -->
+  <div id="boardWrap">
+    <div id="board">
+      <svg id="traceSvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+
+      <div class="slot" id="slotSSD" data-part="ssd">
+        <span class="slot-label">SSD</span>
+      </div>
+      <div class="slot" id="slotPSU" data-part="psu">
+        <span class="slot-label">PSU</span>
+      </div>
+      <div class="slot" id="slotCPU" data-part="cpu">
+        <span class="slot-label">CPU</span>
+      </div>
+      <div class="slot" id="slotRAM" data-part="ram">
+        <span class="slot-label">RAM</span>
+      </div>
+      <div class="slot" id="slotGPU" data-part="gpu">
+        <span class="slot-label">GPU</span>
+      </div>
+      <div class="slot" id="slotCOOLER" data-part="cooler">
+        <span class="slot-label">COOLER</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FACT CARD ===== -->
+  <div id="factCard">
+    <div class="fh" id="factHead">CPU</div>
+    <div class="fb" id="factBody">…</div>
+  </div>
+
+  <!-- ===== TOASTS ===== -->
+  <div id="toastLayer"></div>
+
+  <!-- ===== TRAY ===== -->
+  <div id="trayBar">
+    <div id="trayLabel">ถาด<br>อุปกรณ์</div>
+    <div id="tray"></div>
+  </div>
+
+  <!-- ===== HAND CURSOR ===== -->
+  <div id="cursor"></div>
+
+  <!-- ===== START SCREEN ===== -->
+  <div class="overlay-screen" id="screenStart">
+    <div class="panel-card">
+      <div class="eyebrow">Open House · Interactive Demo</div>
+      <h1>ประกอบคอมด้วยมือคุณ</h1>
+      <p>
+        ใช้ <b>มือเปล่า</b> หยิบชิ้นส่วนคอมพิวเตอร์จากถาดด้านล่าง แล้วนำไปวางลงช่องบนเมนบอร์ดให้ถูกต้อง
+        ก่อนเวลาหมด — ระบบจะจดจำท่า "กำมือ" เพื่อหยิบ และ "แบมือ" เพื่อวาง
+      </p>
+      <div class="stat-row">
+        <div class="stat"><div class="n">90s</div><div class="l">เวลา</div></div>
+        <div class="stat"><div class="n">6</div><div class="l">ชิ้นส่วน</div></div>
+        <div class="stat"><div class="n">3</div><div class="l">คำใบ้</div></div>
+      </div>
+      <div>
+        <button class="btn" id="btnStartCam">🖐️ เริ่มเล่นด้วยกล้อง (AR)</button><br>
+        <button class="btn ghost" id="btnStartMouse">🖱️ เล่นแบบไม่ใช้กล้อง (ลาก-วาง)</button>
+      </div>
+      <div class="cam-note" id="permNote">ต้องอนุญาตให้เว็บไซต์เข้าถึงกล้องเพื่อเล่นโหมด AR</div>
+    </div>
+  </div>
+
+  <!-- ===== SUCCESS SCREEN ===== -->
+  <div class="overlay-screen hidden" id="screenSuccess">
+    <div class="panel-card">
+      <div class="eyebrow">Assembly Complete</div>
+      <h1>ประกอบสำเร็จ!</h1>
+      <p>คุณประกอบพีซีครบทุกชิ้นส่วนเรียบร้อยแล้ว ยินดีด้วย!</p>
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="finalScore">0</div><div class="l">คะแนนรวม</div></div>
+        <div class="stat"><div class="n" id="finalBonus">0</div><div class="l">โบนัสเวลา</div></div>
+        <div class="stat"><div class="n" id="finalTotal">0</div><div class="l">คะแนนสุทธิ</div></div>
+      </div>
+      <button class="btn" id="btnRestart1">🔁 เล่นอีกครั้ง</button>
+    </div>
+  </div>
+
+  <!-- ===== TIME'S UP SCREEN ===== -->
+  <div class="overlay-screen hidden" id="screenTimeup">
+    <div class="panel-card">
+      <div class="eyebrow">Time's Up</div>
+      <h1>หมดเวลา!</h1>
+      <p>ยังประกอบไม่ครบทุกชิ้นส่วน ลองใหม่อีกครั้งเพื่อสร้างสถิติที่ดีกว่าเดิม</p>
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="timeupScore">0</div><div class="l">คะแนนที่ได้</div></div>
+        <div class="stat"><div class="n" id="timeupParts">0/6</div><div class="l">ชิ้นส่วนที่ติดตั้ง</div></div>
+      </div>
+      <button class="btn" id="btnRestart2">🔁 ลองอีกครั้ง</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= MEDIAPIPE HANDS (CDN) ================= -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script src="app.js"></script>
+</body>
+</html>

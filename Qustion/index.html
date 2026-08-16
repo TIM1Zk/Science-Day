@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IT Maejo 2027: Interactive AI Hand Quiz Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe CDN Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-tag">🎓 IT MAEJO 2027</div>
+      <div class="status-badge">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">กำลังโหลด AI Hands Tracking...</span>
+      </div>
+    </div>
+
+    <!-- Mode / Action Controls -->
+    <div class="ui-controls">
+      <div class="round-selector">
+        <span class="round-label">รอบละ:</span>
+        <button class="pill-btn active" onclick="setQuestionsPerRound(3)">3 ข้อ</button>
+        <button class="pill-btn" onclick="setQuestionsPerRound(5)">5 ข้อ</button>
+        <button class="pill-btn" onclick="setQuestionsPerRound(8)">8 ข้อ (จบหลักสูตร)</button>
+      </div>
+      <a href="../Code Block/index.html" class="btn" style="text-decoration: none;" title="กลับไปเกมต่อบล็อกคำสั่ง">
+        🧩 เกมต่อบล็อกโค้ด
+      </a>
+      <button class="btn btn-restart" id="restartBtn" title="เริ่มเล่นใหม่อีกครั้ง">
+        🔄 เริ่มใหม่ (Restart)
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Layout -->
+  <main class="game-layout">
+    <!-- Game Container with Canvas -->
+    <div class="game-container">
+      <video id="webcam" autoplay playsinline></video>
+      <canvas id="quizCanvas" width="1000" height="650"></canvas>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

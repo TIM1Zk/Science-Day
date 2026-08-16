@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Block Collector: IT Department Promotion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe CDN Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Header (Cleanly separated from canvas) -->
+  <header class="app-header">
+    <!-- Status Badge -->
+    <div class="status-badge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">กำลังโหลด AI Hands Tracking...</span>
+    </div>
+
+    <!-- Level Selector Bar -->
+    <div class="level-selector" id="levelSelector">
+      <div class="level-pill active" onclick="switchLevel(0)">🟢 ด่าน 1: ง่าย</div>
+      <div class="level-pill" onclick="switchLevel(1)">🟡 ด่าน 2: ปานกลาง</div>
+      <div class="level-pill" onclick="switchLevel(2)">🔴 ด่าน 3: ท้าทาย</div>
+    </div>
+
+    <!-- Controls -->
+    <div class="ui-controls">
+      <a href="../Qustion/index.html" class="btn btn-quiz" style="text-decoration: none;" title="ไปเล่นเกมตอบคำถามหลักสูตร">
+        📝 เกมตอบคำถามหลักสูตร
+      </a>
+      <button class="btn btn-shuffle" id="shuffleBtn" title="สุ่มเปลี่ยนโจทย์ / ภารกิจ">
+        🎲 สุ่มโจทย์ใหม่
+      </button>
+      <button class="btn" id="resetBtn" title="รีเซ็ตตำแหน่งบล็อก">
+        🔄 รีเซ็ต (Reset)
+      </button>
+    </div>
+  </header>
+
+  <div class="game-container">
+    <!-- Hidden Video Source -->
+    <video id="webcam" autoplay playsinline></video>
+
+    <!-- Interactive Canvas -->
+    <canvas id="gameCanvas" width="1000" height="650"></canvas>
+  </div>
+
+  <!-- External Game Logic Script -->
+  <script src="app.js"></script>
+</body>
+</html>

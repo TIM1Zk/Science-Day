@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>CodeFlow · Logic Animator</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="bg"></div><div id="scan"></div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="brand"><b>CODEFLOW</b><span>LOGIC ANIMATOR</span></div>
+    <div class="stats">
+      <div class="chip id"><i>MISSION ID</i><b id="hMid">—</b></div>
+      <div class="chip"><i>WORLD</i><b id="hWorld">—</b></div>
+      <div class="chip warn"><i>LEVEL</i><b id="hDiff">—</b></div>
+      <div class="chip acc"><i>SCORE</i><b id="hScore">0</b></div>
+      <div class="chip"><i>COMBO</i><b id="hCombo">x1.0</b></div>
+      <div class="chip hot"><i>TIME</i><b id="hTime">—</b></div>
+      <div class="chip integrity"><i>SYSTEM INTEGRITY</i><b id="hInt">100%</b><span class="ibar" id="hBar"><i></i></span></div>
+    </div>
+    <button id="btnExit" class="mini" title="พักเกม / ออกจากเกม">✕ ออกจากเกม</button>
+  </div>
+
+  <div class="stage">
+    <!-- SIMULATION -->
+    <div class="panel">
+      <div class="phead"><span class="dot"></span>LIVE SIMULATION<em id="simTag">STANDBY</em></div>
+      <div class="brief">
+        <h2><u id="bTag">W1</u><span id="bTitle">—</span></h2>
+        <p id="bStory">—</p>
+        <div class="glabel">ข้อกำหนดของระบบ · SYSTEM REQUIREMENTS</div>
+        <ul class="goals" id="bGoals"></ul>
+        <div class="rulebox" id="bRule"></div>
+        <div class="meta" id="bMeta"></div>
+      </div>
+      <canvas id="sim"></canvas>
+    </div>
+
+    <!-- FLOWCHART -->
+    <div class="panel">
+      <div class="phead"><span class="dot" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span>FLOWCHART EDITOR<em id="flowTag">0 / 0</em></div>
+      <div class="flowwrap">
+        <div class="rail" id="rail"></div>
+        <div class="paltitle">คลังบล็อกคำสั่ง · BLOCK LIBRARY</div>
+        <div class="palette" id="palette"></div>
+        <div class="warnline"><b>⚠</b><span>คลังนี้มีบล็อกลวง (decoy) และค่าพารามิเตอร์ที่ใกล้เคียงกัน — อ่านโจทย์ให้ละเอียดก่อนวาง</span></div>
+      </div>
+      <div class="ctl">
+        <button class="btn-run" id="btnRun">▶ RUN</button>
+        <button id="btnUndo" title="ยกเลิกบล็อกล่าสุดที่วาง">↶ ย้อนกลับ</button>
+        <button id="btnReset">↺ RESET</button>
+        <button class="btn-hint" id="btnHint">💡 HINT</button>
+        <button id="btnCam" title="เปิดโหมดควบคุมด้วยมือ (ขออนุญาตใช้กล้อง)">✋ กล้อง</button>
+        <button id="btnMute" title="เสียง">🔊</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ghost"></div>
+<div id="handCursor"><div class="ring"></div><div class="core"></div><div class="tip" id="handTip">จีบนิ้วเพื่อคีบ</div></div>
+<div id="toast"></div>
+
+<div id="cam"><video id="camVid" playsinline muted></video></div>
+<canvas id="camCv"></canvas>
+<div id="camHud"><span id="camState">กำลังเชื่อมต่อ…</span><b id="camPinch"></b><button id="btnCamDim" title="ปรับความสว่างภาพกล้อง">◐</button></div>
+
+<!-- ===== MENU ===== -->
+<div class="ov on" id="ovMenu"><div class="card">
+  <div class="title">CODE<span>FLOW</span></div>
+  <div class="sub">LOGIC ANIMATOR · COMPUTATIONAL THINKING SIMULATOR</div>
+  <p class="lead">5 โลกภารกิจ: ฟาร์ม IoT · โดรนส่งของ · ความปลอดภัยไซเบอร์ · ครัวหุ่นยนต์ · นำทางรถส่งของ — เรียงบล็อกคำสั่งให้เป็นอัลกอริทึมที่ถูกต้อง แล้วกด RUN เพื่อรันทีละขั้น ระบบจะจำลองผลลัพธ์จริงให้เห็นทันที — ขั้นที่ถูกจะถูกล็อกไว้ ขั้นที่ผิดจะเด้งกลับคลังพร้อมแสดงสิ่งที่พังในระบบ</p>
+
+  <div class="grp"><label>เลือกโลกภารกิจ</label><div class="opts" id="optWorld">
+    <div class="opt" data-v="1">🌱 Smart Farm<small>IoT · SENSOR LOGIC</small></div>
+    <div class="opt" data-v="2">🚁 Delivery Drone<small>NAVIGATION</small></div>
+    <div class="opt" data-v="3">🔐 Cyber Security<small>2FA · DEFENSE</small></div>
+    <div class="opt" data-v="4">🍳 Robo Kitchen<small>RECIPE SEQUENCE</small></div>
+    <div class="opt" data-v="5">🚗 Route Finder<small>PATHFINDING</small></div>
+    <div class="opt sel" data-v="0">🌐 Campaign<small>สุ่มครบ 5 โลก</small></div>
+  </div></div>
+
+  <div class="grp"><label>ระดับความยาก</label><div class="opts" id="optDiff">
+    <div class="opt" data-v="0">ง่าย<small>5 ขั้น · ลวง 2</small></div>
+    <div class="opt" data-v="1">ปกติ<small>7 ขั้น · ลวง 3</small></div>
+    <div class="opt" data-v="2">ยาก<small>9 ขั้น · ลวง 5</small></div>
+    <div class="opt" data-v="3">โหด<small>11 ขั้น · ลวง 7</small></div>
+    <div class="opt sel" data-v="4">ADAPTIVE<small>ไต่ระดับอัตโนมัติ</small></div>
+  </div></div>
+
+  <div class="grp"><label>SEED (เว้นว่างเพื่อสุ่มใหม่ทุกครั้ง)</label>
+    <input type="text" id="seedIn" placeholder="เช่น EXPO-2026 — ใส่ seed เดียวกันจะได้ชุดโจทย์เดิม สำหรับใช้ตัดสินแบบยุติธรรม" maxlength="24" />
+  </div>
+
+  <div class="keys">
+    <div class="key"><b>ANTI-CHEAT</b><span>ทุกภารกิจถูกสร้างสดจากตัวสุ่ม ทั้งลำดับ ค่าตัวเลข เงื่อนไข และบล็อกลวง เล่นซ้ำก็ไม่ได้โจทย์เดิม</span></div>
+    <div class="key"><b>HAND TRACKING</b><span>กดปุ่ม ✋ ในเกม แล้วกด “อนุญาตและเปิดกล้อง” เบราว์เซอร์จะถามสิทธิ์ ให้เลือกอนุญาต จากนั้นจีบนิ้วโป้ง+นิ้วชี้เพื่อคีบบล็อก</span></div>
+    <div class="key"><b>MOUSE / TOUCH</b><span>ลากวางด้วยเมาส์หรือนิ้วได้ทันที หรือแตะบล็อกแล้วแตะช่องปลายทาง</span></div>
+    <div class="key"><b>ยกเลิกได้ตลอด</b><span>↶ ย้อนบล็อกล่าสุด (Z) · ระหว่างรันปุ่ม RUN จะเปลี่ยนเป็นยกเลิกการรัน (Esc)</span></div>
+  </div>
+
+  <div class="row"><button class="big" id="btnStart">▶ เริ่มภารกิจ</button></div>
+</div></div>
+
+<!-- ===== CAMERA PERMISSION ===== -->
+<div class="ov" id="ovCam"><div class="card" style="width:min(520px,100%)">
+  <div class="title" style="font-size:26px">ขอ<span>อนุญาตใช้กล้อง</span></div>
+  <div class="sub">HAND TRACKING PERMISSION</div>
+  <p class="lead">โหมดควบคุมด้วยมือต้องใช้ภาพจากกล้องเว็บแคมเพื่อตรวจจับตำแหน่งนิ้ว
+    <b style="color:var(--neon)">ภาพทั้งหมดประมวลผลในเครื่องของคุณเท่านั้น ไม่มีการบันทึกหรือส่งออกไปที่ใด</b>
+    เมื่อกดปุ่มด้านล่าง เบราว์เซอร์จะแสดงกล่องถามสิทธิ์ ให้เลือก <b>“อนุญาต / Allow”</b></p>
+  <div class="checks" id="camChecks"></div>
+  <div class="rulebox" id="camMsg" style="margin-top:12px">กดปุ่มด้านล่างเพื่อขอสิทธิ์ใช้กล้อง</div>
+  <div class="row" style="flex-direction:column;gap:8px">
+    <button class="big" id="btnAllowCam">🎥 อนุญาตและเปิดกล้อง</button>
+    <button id="btnNoCam">↩ ไม่ใช้กล้อง เล่นด้วยเมาส์ต่อ</button>
+  </div>
+</div></div>
+
+<!-- ===== PAUSE / EXIT ===== -->
+<div class="ov" id="ovPause"><div class="card" style="width:min(440px,100%)">
+  <div class="title" style="font-size:26px">พัก<span>เกม</span></div>
+  <div class="sub" id="pauseSub">—</div>
+  <p class="lead">ภารกิจถูกพักไว้แล้ว นาฬิกาหยุดเดินระหว่างนี้ เลือกได้ว่าจะเล่นต่อหรือออก</p>
+  <div class="row" style="flex-direction:column;gap:8px">
+    <button class="big" id="btnResume">▶ เล่นต่อ</button>
+    <button id="btnEndNow">🏁 จบเกม แล้วดูสรุปคะแนน</button>
+    <button id="btnToMenu">↩ ออกไปหน้าเมนูหลัก</button>
+  </div>
+</div></div>
+
+<!-- ===== MISSION CLEAR ===== -->
+<div class="ov" id="ovClear"><div class="card">
+  <div class="title" style="font-size:30px">MISSION <span>CLEAR</span></div>
+  <div class="sub" id="clearSub">—</div>
+  <div style="margin-top:18px" id="clearLines"></div>
+  <div class="row"><button class="big" id="btnNext">▶ ภารกิจถัดไป</button><button id="btnQuit1">🏁 จบเกม / ดูสรุป</button></div>
+</div></div>
+
+<!-- ===== GAME OVER ===== -->
+<div class="ov" id="ovOver"><div class="card">
+  <div class="title" style="font-size:30px">SYSTEM <span style="color:var(--red);text-shadow:0 0 28px rgba(255,61,95,.5)">FAILURE</span></div>
+  <div class="sub">ระบบเสียหายเกินขีดจำกัด — สรุปผลการปฏิบัติภารกิจ</div>
+  <div style="margin-top:18px" id="overLines"></div>
+  <div class="rank" id="overRank">—</div>
+  <div class="row"><button class="big" id="btnAgain">↺ เล่นอีกครั้ง</button></div>
+</div></div>
+
+<script src="app.js"></script>
+</body>
+</html>

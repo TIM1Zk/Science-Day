@@ -1,0 +1,57 @@
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700;900&display=swap" rel="stylesheet">
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+<div class="video-container">
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="output_canvas"></canvas>
+</div>
+
+<div id="game-ui" class="hidden">
+    <div id="dead-zone"></div>
+    <div id="target-line"></div>
+
+    <div id="warning-banner">⚠️ ขยับให้กล้องเห็นมือทั้ง 2 ข้าง</div>
+
+    <div class="top-bar">
+        <div class="timer-box">⏱ <span id="time-val">20.0</span>s</div>
+        <div class="hand-status">
+            <div class="pill" id="pill-left">ซ้าย</div>
+            <div class="pill" id="pill-right">ขวา</div>
+        </div>
+        <div class="score-box" id="score-container"><span id="score-val">0</span></div>
+    </div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+</div>
+
+<div id="loading-screen" class="screen">
+    <div class="title" style="font-size: 40px;">กำลังเปิดกล้อง...</div>
+    <div class="subtitle">ระบบกำลังโหลด AI ตรวจจับร่างกาย รอสักครู่</div>
+</div>
+
+<div id="start-screen" class="screen hidden">
+    <div class="title">HIGH SCORE MODE!</div>
+    <div class="subtitle">
+        <strong style="color:var(--line-color); font-size: 32px;">ทำคะแนนให้ได้มากที่สุดใน 20 วินาที</strong><br><br>
+        🧍 ถอยหลังจนกล้องเห็นหัวไหล่และแขนทั้งสองข้าง<br>
+        ⚡ <span style="color: #00ffcc;">สลัดมือขึ้น-ลงให้ข้ามเส้นเหลืองกลางจอ</span><br>
+        ✅ ข้ามเส้น 1 ครั้ง = 1 คะแนน (นับแยกซ้าย-ขวา)<br>
+        💡 ต้องข้ามให้พ้นแถบเหลืองจางถึงจะนับ กันการนับซ้ำจากมือสั่น
+    </div>
+    <button onclick="startGame()">พร้อมแล้ว ลุย!</button>
+</div>
+
+<div id="end-screen" class="screen hidden">
+    <div class="title" style="background: -webkit-linear-gradient(#ffeb3b, #ff0055); -webkit-background-clip: text; font-size: 84px;">🎉 สุดยอด! 🎉</div>
+    <div class="subtitle" style="font-size: 32px;">คุณทำไปได้ทั้งหมด<br><strong id="final-score" style="color:var(--primary); font-size: 100px; text-shadow: 0 0 30px var(--primary); display:block; margin: 10px 0;">0</strong> ครั้ง</div>
+    <button onclick="resetGame()">เล่นอีกครั้ง</button>
+</div>
+
+<script src="app.js"></script>
