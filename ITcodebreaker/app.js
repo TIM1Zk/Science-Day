@@ -265,7 +265,7 @@
             const dx = thumbTip.x - indexTip.x;
             const dy = thumbTip.y - indexTip.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            isPinching = dist < 0.09; // เพิ่มค่าตรงนี้จาก 0.06 เป็น 0.09 เพื่อให้การจีบนิ้วติดง่ายขึ้น
+            isPinching = dist < 0.075; // ปรับระยะ pinch ให้พอดี ตั้งใจจีบถึงติด ไม่ลั่นเองเวลาแค่ชี้
         }
 
         function updateHandCursor() {
@@ -298,11 +298,18 @@
             }
 
             if (currentHoverElement && isPointNearElement(currentHoverElement, smoothX, smoothY, HOVER_BUFFER)) {
+                const isAnswer = currentHoverElement.classList.contains('answer-btn');
+
                 if (isPinching) {
                     currentHoverElement.style.setProperty('--dwell', '100%');
                     triggerVirtualClick();
-                } else {
+                } else if (!isAnswer) {
+                    // For menu buttons (Start / Difficulty / Restart), allow dwell hover
                     updateDwellProgress();
+                } else {
+                    // For answer buttons, require Pinch to confirm (prevent accidental hover triggers)
+                    cursorRing.style.strokeDashoffset = 157;
+                    currentHoverElement.style.setProperty('--dwell', '30%');
                 }
                 return;
             }

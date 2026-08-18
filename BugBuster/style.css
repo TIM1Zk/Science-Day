@@ -124,6 +124,54 @@ body {
   gap: 8px;
 }
 
+.difficulty-group {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 4px;
+}
+
+.diff-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-family: var(--font-thai);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.diff-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.diff-btn.active {
+  background: rgba(0, 240, 255, 0.2);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.diff-btn[data-diff="EASY"].active {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 255, 136, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.diff-btn[data-diff="HARD"].active {
+  background: rgba(255, 51, 102, 0.2);
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 51, 102, 0.5);
+  box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
+}
+
 .nav-btn {
   text-decoration: none;
   background: rgba(255, 255, 255, 0.05);

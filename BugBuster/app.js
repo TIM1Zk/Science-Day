@@ -13,16 +13,46 @@ const toggleControlModeBtn = document.getElementById('toggleControlModeBtn');
 const CANVAS_WIDTH = 1100;
 const CANVAS_HEIGHT = 680;
 
+// Difficulty Configurations
+const DIFFICULTY_CONFIG = {
+  EASY: {
+    label: '🟢 EASY (ง่าย)',
+    time: 60,
+    spawnInterval: 1350,
+    speedMultiplier: 0.8,
+    dmgMultiplier: 0.7,
+    color: '#00ff88'
+  },
+  MEDIUM: {
+    label: '🟡 MEDIUM (ปานกลาง)',
+    time: 50,
+    spawnInterval: 1050,
+    speedMultiplier: 1.0,
+    dmgMultiplier: 1.0,
+    color: '#00f0ff'
+  },
+  HARD: {
+    label: '🔴 HARD (ท้าทาย)',
+    time: 45,
+    spawnInterval: 750,
+    speedMultiplier: 1.35,
+    dmgMultiplier: 1.4,
+    color: '#ff3366'
+  }
+};
+
+let currentDifficulty = 'MEDIUM';
+
 // Game State
 let gameState = 'START'; // 'START', 'PLAYING', 'GAME_OVER', 'VICTORY'
 let score = 0;
 let codeQuality = 100; // 0 - 100%
 let combo = 0;
 let maxCombo = 0;
-let timeRemaining = 60; // 60 seconds round
+let timeRemaining = 50; // seconds round
 let lastTime = performance.now();
 let bugSpawnTimer = 0;
-let targetSpawnInterval = 1100; // ms
+let targetSpawnInterval = 1050; // ms
 let currentLevel = 1;
 
 // Particles & Effects
@@ -62,6 +92,7 @@ let activeItems = [];
 
 class FallingItem {
   constructor() {
+    const diffCfg = DIFFICULTY_CONFIG[currentDifficulty] || DIFFICULTY_CONFIG.MEDIUM;
     // 75% chance bug, 25% chance clean code
     const isBug = Math.random() < 0.72;
     const bugPool = ITEM_TYPES.filter(i => i.type === 'BUG');
@@ -73,7 +104,7 @@ class FallingItem {
     this.code = def.code;
     this.color = def.color;
     this.points = def.points;
-    this.dmg = def.dmg || 15;
+    this.dmg = Math.round((def.dmg || 15) * diffCfg.dmgMultiplier);
     this.reward = def.reward || 10;
     this.icon = def.icon;
     this.testType = def.testType;
@@ -82,8 +113,8 @@ class FallingItem {
     this.h = 75;
     this.x = 80 + Math.random() * (CANVAS_WIDTH - 240);
     this.y = -80;
-    this.vx = (Math.random() - 0.5) * 1.2;
-    this.vy = 1.6 + Math.random() * 1.8 + (currentLevel * 0.4);
+    this.vx = (Math.random() - 0.5) * 1.2 * diffCfg.speedMultiplier;
+    this.vy = (1.6 + Math.random() * 1.8 + (currentLevel * 0.4)) * diffCfg.speedMultiplier;
     this.hp = this.type === 'BUG' ? 1 : 1;
     this.isDead = false;
     this.pulse = 0;
@@ -275,13 +306,19 @@ function playAudioBeep(freq, duration, type = 'sine') {
 }
 
 // Reset Game
-function startGame() {
+function startGame(diffKey) {
+  if (diffKey && DIFFICULTY_CONFIG[diffKey]) {
+    currentDifficulty = diffKey;
+  }
+  const diffCfg = DIFFICULTY_CONFIG[currentDifficulty] || DIFFICULTY_CONFIG.MEDIUM;
+
   gameState = 'PLAYING';
   score = 0;
   codeQuality = 100;
   combo = 0;
   maxCombo = 0;
-  timeRemaining = 50;
+  timeRemaining = diffCfg.time;
+  targetSpawnInterval = diffCfg.spawnInterval;
   activeItems = [];
   particles = [];
   floatingTexts = [];
@@ -322,13 +359,13 @@ function update(dt, now) {
     }
 
     // Dynamic difficulty level
-    if (timeRemaining < 20) currentLevel = 3;
-    else if (timeRemaining < 35) currentLevel = 2;
+    if (timeRemaining < 15) currentLevel = 3;
+    else if (timeRemaining < 30) currentLevel = 2;
     else currentLevel = 1;
 
     // Spawn items
     bugSpawnTimer += dt * 1000;
-    const interval = Math.max(500, targetSpawnInterval - currentLevel * 180);
+    const interval = Math.max(380, targetSpawnInterval - currentLevel * 140);
     if (bugSpawnTimer >= interval) {
       bugSpawnTimer = 0;
       activeItems.push(new FallingItem());
@@ -603,30 +640,63 @@ function drawStartScreen() {
 
   // Instructions Box
   ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-  roundRect(ctx, 200, 260, CANVAS_WIDTH - 400, 180, 14, true, false);
+  roundRect(ctx, 200, 245, CANVAS_WIDTH - 400, 150, 14, true, false);
 
   ctx.textAlign = 'left';
-  ctx.font = '14px "Kanit", sans-serif';
+  ctx.font = '13px "Kanit", sans-serif';
   ctx.fillStyle = '#ff3366';
-  ctx.fillText('🐛 ยิงทำลาย Bug (Syntax Error, Memory Leak, Security) -> ได้คะแนน & Code Quality', 230, 295);
+  ctx.fillText('🐛 ยิงทำลาย Bug (Syntax Error, Memory Leak, Security) -> ได้คะแนน & Code Quality', 230, 275);
   ctx.fillStyle = '#00ff88';
-  ctx.fillText('✨ ปล่อยให้ Clean Code & Green IT ผ่านลงล่าง -> ได้รับโบนัส Deploy สำเร็จ', 230, 335);
+  ctx.fillText('✨ ปล่อยให้ Clean Code & Green IT ผ่านลงล่าง -> ได้รับโบนัส Deploy สำเร็จ', 230, 310);
   ctx.fillStyle = '#ffb703';
-  ctx.fillText('🎮 วิธีเล่น: ใช้เมาส์คลิกยิง หรือ จีบนิ้ว (Pinch Gesture) สั่งยิง Automated Test!', 230, 375);
+  ctx.fillText('🎮 วิธีเล่น: ใช้เมาส์คลิกยิง หรือ จีบนิ้ว (Pinch Gesture) สั่งยิง Automated Test!', 230, 345);
   ctx.fillStyle = '#38bdf8';
-  ctx.fillText('⚡ วงรอบทดสอบ: 50 วินาที รักษาค่า Code Quality ให้เกิน 50% เพื่อผ่านการประเมิน', 230, 415);
+  ctx.fillText('⚡ วงรอบทดสอบ: รักษาค่า Code Quality ให้เกิน 50% เพื่อผ่านการประเมิน', 230, 375);
+
+  // Difficulty selection cards on start screen
+  const diffCfg = DIFFICULTY_CONFIG[currentDifficulty] || DIFFICULTY_CONFIG.MEDIUM;
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 13px "Kanit", sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('เลือกระดับความยาก (SELECT DIFFICULTY):', CANVAS_WIDTH / 2, 420);
+
+  const diffs = [
+    { key: 'EASY', label: '🟢 EASY (ง่าย)', info: '60 วิ · บั๊กตกช้า', x: CANVAS_WIDTH / 2 - 210, col: '#00ff88' },
+    { key: 'MEDIUM', label: '🟡 MEDIUM (ปานกลาง)', info: '50 วิ · ความเร็วปกติ', x: CANVAS_WIDTH / 2 - 65, col: '#00f0ff' },
+    { key: 'HARD', label: '🔴 HARD (ท้าทาย)', info: '45 วิ · บั๊กดุ/ตกไว', x: CANVAS_WIDTH / 2 + 80, col: '#ff3366' }
+  ];
+
+  diffs.forEach(d => {
+    const isSelected = currentDifficulty === d.key;
+    ctx.fillStyle = isSelected ? 'rgba(18, 40, 60, 0.95)' : 'rgba(11, 16, 32, 0.7)';
+    ctx.strokeStyle = isSelected ? d.col : 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = isSelected ? 2.5 : 1;
+    if (isSelected) {
+      ctx.shadowColor = d.col;
+      ctx.shadowBlur = 10;
+    }
+    roundRect(ctx, d.x, 435, 130, 48, 10, true, true);
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = isSelected ? '#ffffff' : '#cbd5e1';
+    ctx.font = 'bold 12px "Kanit", sans-serif';
+    ctx.fillText(d.label, d.x + 65, 455);
+    ctx.fillStyle = isSelected ? d.col : '#64748b';
+    ctx.font = '10px "Kanit", sans-serif';
+    ctx.fillText(d.info, d.x + 65, 472);
+  });
 
   // Start Button
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#00ff88';
-  ctx.shadowColor = '#00ff88';
+  ctx.fillStyle = diffCfg.color;
+  ctx.shadowColor = diffCfg.color;
   ctx.shadowBlur = 15;
-  roundRect(ctx, CANVAS_WIDTH / 2 - 120, 470, 240, 50, 25, true, false);
+  roundRect(ctx, CANVAS_WIDTH / 2 - 120, 500, 240, 46, 23, true, false);
   ctx.shadowBlur = 0;
 
   ctx.fillStyle = '#0b0f19';
-  ctx.font = 'bold 18px "Kanit", sans-serif';
-  ctx.fillText('🚀 เริ่มต้นภารกิจ (Start)', CANVAS_WIDTH / 2, 502);
+  ctx.font = 'bold 17px "Kanit", sans-serif';
+  ctx.fillText(`🚀 เริ่มภารกิจ [${currentDifficulty}]`, CANVAS_WIDTH / 2, 530);
 
   ctx.restore();
 }
@@ -728,13 +798,63 @@ canvas.addEventListener('mousemove', (e) => {
   cursorY = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
 });
 
+function handleStartScreenClick(x, y) {
+  // Check difficulty card clicks
+  const diffs = [
+    { key: 'EASY', x: CANVAS_WIDTH / 2 - 210 },
+    { key: 'MEDIUM', x: CANVAS_WIDTH / 2 - 65 },
+    { key: 'HARD', x: CANVAS_WIDTH / 2 + 80 }
+  ];
+
+  for (const d of diffs) {
+    if (x >= d.x && x <= d.x + 130 && y >= 435 && y <= 483) {
+      setDifficulty(d.key);
+      playAudioBeep(520, 0.08, 'triangle');
+      return true;
+    }
+  }
+
+  // Check Start Button click
+  if (x >= CANVAS_WIDTH / 2 - 120 && x <= CANVAS_WIDTH / 2 + 120 && y >= 500 && y <= 546) {
+    startGame();
+    return true;
+  }
+
+  // Any other click on start screen starts the game
+  startGame();
+  return true;
+}
+
+function setDifficulty(diffKey) {
+  if (!DIFFICULTY_CONFIG[diffKey]) return;
+  currentDifficulty = diffKey;
+
+  // Update header buttons UI
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.diff === diffKey);
+  });
+}
+
+// Bind HTML difficulty buttons
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const diff = btn.dataset.diff;
+    setDifficulty(diff);
+    if (gameState === 'PLAYING') {
+      startGame(diff);
+    }
+  });
+});
+
 canvas.addEventListener('mousedown', (e) => {
   const rect = canvas.getBoundingClientRect();
   cursorX = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
   cursorY = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
   isLaserActive = true;
 
-  if (gameState === 'START' || gameState === 'GAME_OVER' || gameState === 'VICTORY') {
+  if (gameState === 'START') {
+    handleStartScreenClick(cursorX, cursorY);
+  } else if (gameState === 'GAME_OVER' || gameState === 'VICTORY') {
     startGame();
   } else if (gameState === 'PLAYING') {
     handleZap(cursorX, cursorY);
@@ -762,7 +882,9 @@ canvas.addEventListener('touchstart', (e) => {
   cursorY = ((touch.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
   isLaserActive = true;
 
-  if (gameState === 'START' || gameState === 'GAME_OVER' || gameState === 'VICTORY') {
+  if (gameState === 'START') {
+    handleStartScreenClick(cursorX, cursorY);
+  } else if (gameState === 'GAME_OVER' || gameState === 'VICTORY') {
     startGame();
   } else if (gameState === 'PLAYING') {
     handleZap(cursorX, cursorY);
@@ -817,7 +939,9 @@ function onHandResults(results) {
 
     // Trigger hit on pinch down edge
     if (isPinching && !lastPinchState) {
-      if (gameState === 'START' || gameState === 'GAME_OVER' || gameState === 'VICTORY') {
+      if (gameState === 'START') {
+        handleStartScreenClick(cursorX, cursorY);
+      } else if (gameState === 'GAME_OVER' || gameState === 'VICTORY') {
         startGame();
       } else if (gameState === 'PLAYING') {
         handleZap(cursorX, cursorY);

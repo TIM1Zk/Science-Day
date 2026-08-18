@@ -1426,15 +1426,25 @@ function execStep(i){
       Sim.bad(blk?blk.fx:'');SFX.err();
       G.combo=0;G.errThisMission++;G.totalErr++;
       G.integrity-=[9,11,13,16][G.mission.diff];
-      updateHUD();
       G.stepTimer=setTimeout(()=>{
         G.stepTimer=null;
-        // partial reset : เด้งเฉพาะบล็อกที่ผิดกลับคลัง
-        if(el){el.classList.remove('wrong');$('#palette').appendChild(el);}
-        G.slots[i]=null;slot.classList.remove('bad');
+        // รีเซ็ตบล็อกคำตอบที่ยังไม่ถูกล็อกทั้งหมดกลับคืนสู่คลัง
+        G.slots.forEach((k, idx)=>{
+          if(k && idx >= G.locked){
+            const blockEl = blockEls.get(k);
+            if(blockEl){
+              blockEl.classList.remove('wrong', 'locked');
+              $('#palette').appendChild(blockEl);
+            }
+            G.slots[idx] = null;
+            const sEl = document.querySelector(`.slot[data-i="${idx}"]`);
+            if(sEl) sEl.classList.remove('bad', 'exec');
+          }
+        });
+        G.history = [];
         updateFlowTag();stopRun('ERROR');
         if(G.integrity<=0){gameOver();return;}
-        toast('ขั้นที่ '+(i+1)+' ผิด — บล็อกถูกส่งกลับคลัง แก้เฉพาะจุดนี้แล้วกด RUN ต่อได้เลย');
+        toast('ลำดับผิดพลาด! เคลียร์คำตอบกลับคลัง — ลองเรียงใหม่อีกครั้ง');
         setTimeout(()=>Sim.recover(),900);
       },1500);
     }

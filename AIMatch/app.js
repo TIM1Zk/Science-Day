@@ -340,6 +340,53 @@ function checkRoundCompletion() {
   }
 }
 
+let isTimeoutProcessing = false;
+function handleRoundTimeout() {
+  if (isTimeoutProcessing || gameState !== 'PLAYING') return;
+  isTimeoutProcessing = true;
+  gameState = 'ROUND_TIMEOUT';
+
+  // Release any currently dragged card
+  if (draggedCard) {
+    draggedCard.x = draggedCard.origX;
+    draggedCard.y = draggedCard.origY;
+    draggedCard = null;
+  }
+  isGrabbing = false;
+
+  const scenario = activeGameScenarios[currentRound];
+  if (scenario) {
+    // Auto-reveal and snap remaining matching cards into empty slots
+    scenario.targetSlots.forEach(slot => {
+      if (!slot.matched && scenario.placedCards) {
+        const correctCard = scenario.placedCards.find(c => c.tag === slot.requiredTag && !c.isPlaced);
+        if (correctCard) {
+          slot.matched = correctCard;
+          correctCard.x = slot.x + (slot.w - correctCard.w) / 2;
+          correctCard.y = slot.y + 10;
+          correctCard.isPlaced = true;
+        }
+      }
+    });
+  }
+
+  createSparkles(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, '#ff3366', 40);
+  addFloatingText('⏰ หมดเวลาในภารกิจนี้!', CANVAS_WIDTH / 2 - 80, 220, '#ff3366');
+  playTone(220, 0.4, 'sawtooth');
+
+  setTimeout(() => {
+    isTimeoutProcessing = false;
+    if (currentRound + 1 < activeGameScenarios.length) {
+      currentRound++;
+      initScenarioLayout(currentRound);
+      roundTimer = 35;
+      gameState = 'PLAYING';
+    } else {
+      gameState = 'VICTORY';
+    }
+  }, 2200);
+}
+
 function startMatchGame() {
   gameState = 'PLAYING';
   currentRound = 0;
@@ -375,7 +422,7 @@ function update(dt) {
     roundTimer -= dt;
     if (roundTimer <= 0) {
       roundTimer = 0;
-      // timeout penalty or proceed
+      handleRoundTimeout();
     }
   }
 
@@ -414,7 +461,7 @@ function draw() {
     ctx.stroke();
   }
 
-  if (gameState === 'PLAYING') {
+  if (gameState === 'PLAYING' || gameState === 'ROUND_TIMEOUT') {
     drawHUD();
     drawScenarioBoard();
   }
