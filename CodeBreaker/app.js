@@ -403,11 +403,7 @@
             combo = 0;
             updateScoreUI();
             buildLevelDots();
-
-            setTimeout(() => {
-                isClickLocked = false;
-                loadQuestion();
-            }, 400);
+            loadQuestion();
         }
 
         function buildLevelDots() {

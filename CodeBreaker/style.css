@@ -15,9 +15,20 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Kanit', 'Outfit', sans-serif;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        #question-text {
+            font-family: 'Fira Code', 'Kanit', monospace !important;
+            color: #ffffff !important;
+            font-size: 1.45rem !important;
+            font-weight: 700 !important;
+            line-height: 1.5 !important;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 255, 255, 0.3) !important;
+            z-index: 5;
+            position: relative;
         }
 
         html, body {
@@ -71,7 +82,7 @@
             position: absolute;
             top: 16px; left: 50%;
             transform: translateX(-50%);
-            background: var(--glass);
+            background: rgba(10, 18, 30, 0.92);
             border: 1px solid var(--primary);
             padding: 8px 18px;
             border-radius: 20px;
@@ -80,9 +91,9 @@
             font-size: 0.85rem;
             letter-spacing: 0.5px;
             text-shadow: 0 0 5px var(--primary);
-            box-shadow: 0 0 10px var(--glass);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 10px var(--glass);
             z-index: 20;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -117,28 +128,30 @@
             align-items: center;
             text-align: center;
             width: 100%;
-            max-width: 620px;
+            max-width: 650px;
             padding: 20px;
         }
         .screen.active { display: flex; animation: fadein 0.35s ease; }
         @keyframes fadein { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
 
         h1 {
+            font-family: 'Outfit', 'Kanit', sans-serif;
             font-size: 2.3rem;
+            font-weight: 800;
             color: var(--primary);
-            text-shadow: 0 0 10px var(--primary);
+            text-shadow: 0 0 12px var(--primary);
             margin-bottom: 6px;
             letter-spacing: 1px;
         }
-        .subtitle { font-size: 1.05rem; margin-bottom: 30px; color: #8fe9e9; letter-spacing: 3px; }
+        .subtitle { font-size: 1.05rem; margin-bottom: 30px; color: #8fe9e9; letter-spacing: 3px; font-weight: 600; }
 
         .hologram-box {
-            background: var(--glass);
+            background: rgba(8, 14, 28, 0.88);
             border: 2px solid var(--primary);
-            padding: 18px 20px;
-            border-radius: 10px;
-            box-shadow: inset 0 0 20px rgba(0,255,255,0.2), 0 0 20px rgba(0,255,255,0.15);
-            backdrop-filter: blur(4px);
+            padding: 22px 24px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0,255,255,0.15), 0 0 20px rgba(0,255,255,0.2);
+            backdrop-filter: blur(12px);
             margin-bottom: 18px;
             position: relative;
             overflow: hidden;
@@ -147,26 +160,30 @@
             content: "";
             position: absolute;
             top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(to bottom, transparent, rgba(0,255,255,0.1), transparent);
+            background: linear-gradient(to bottom, transparent, rgba(0,255,255,0.06), transparent);
             animation: scanline 3s linear infinite;
             pointer-events: none;
         }
         @keyframes scanline { 0% { transform: translateY(-100%);} 100% { transform: translateY(100%);} }
 
         .hoverable {
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(10, 18, 32, 0.88);
             border: 2px solid var(--primary);
-            color: white;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            border-radius: 8px;
-            margin: 8px;
+            color: #ffffff;
+            padding: 16px 28px;
+            font-family: 'Fira Code', 'Kanit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 12px;
+            margin: 6px;
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
             position: relative;
             min-width: 190px;
             text-align: center;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
         }
         .hoverable:active { transform: scale(0.97); }
 
