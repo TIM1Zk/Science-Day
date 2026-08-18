@@ -87,7 +87,7 @@
 ---
 
 ## 4. 📝 Sector 04: IT Curriculum Quiz Challenge
-* **ที่ตั้งโฟลเดอร์:** [`Qustion/`](file:///Users/tim1zk_/Sci_day/Qustion/index.html)
+* **ที่ตั้งโฟลเดอร์:** [`Quiz/`](file:///Users/tim1zk_/Sci_day/Quiz/index.html)
 * **เนื้อหาที่เกี่ยวข้อง:** ข้อมูลโครงสร้างหลักสูตร 120 หน่วยกิต แผนการเรียน 4 ปี และมาตรฐานสากล ISCED 0613
 
 ### 🎯 คอนเซ็ปต์ของเกม
@@ -133,7 +133,7 @@ Industrial SCADA Terminal Simulator จำลองการวาง Logic Flow
 ---
 
 ## 7. 🖥️ Sector 07: AR PC Builder
-* **ที่ตั้งโฟลเดอร์:** [`PcBuilding/`](file:///Users/tim1zk_/Sci_day/PcBuilding/index.html)
+* **ที่ตั้งโฟลเดอร์:** [`PCBuilder/`](file:///Users/tim1zk_/Sci_day/PCBuilder/index.html)
 * **เสาหลักที่เกี่ยวข้อง:** เสาหลักที่ 1 & 2 — *Computer Hardware & System Architecture*
 
 ### 🎯 คอนเซ็ปต์ของเกม
@@ -148,7 +148,7 @@ Industrial SCADA Terminal Simulator จำลองการวาง Logic Flow
 ---
 
 ## 8. 🔓 Sector 08: IT AR Code Breaker
-* **ที่ตั้งโฟลเดอร์:** [`ITcodebreaker/`](file:///Users/tim1zk_/Sci_day/ITcodebreaker/index.html)
+* **ที่ตั้งโฟลเดอร์:** [`CodeBreaker/`](file:///Users/tim1zk_/Sci_day/CodeBreaker/index.html)
 * **เสาหลักที่เกี่ยวข้อง:** เสาหลักที่ 1 & 3 — *Cryptography, Algorithms & Interactive Hologram*
 
 ### 🎯 คอนเซ็ปต์ของเกม
@@ -162,7 +162,7 @@ Industrial SCADA Terminal Simulator จำลองการวาง Logic Flow
 ---
 
 ## 9. ⚡ Sector 09: เกมสลัดแขนทะลุขีดจำกัด!
-* **ที่ตั้งโฟลเดอร์:** [`67game/`](file:///Users/tim1zk_/Sci_day/67game/index.html)
+* **ที่ตั้งโฟลเดอร์:** [`PoseArm/`](file:///Users/tim1zk_/Sci_day/PoseArm/index.html)
 * **เสาหลักที่เกี่ยวข้อง:** *AI Computer Vision & Interactive Pose Gaming*
 
 ### 🎯 คอนเซ็ปต์ของเกม

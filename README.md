@@ -22,12 +22,12 @@
 | **01** | **🛡️ Bug Buster & Automated Tester** | Software Testing, Clean Code, SDLC, Security | 🖐️ Hand / 🖱️ Mouse | [`BugBuster/`](BugBuster/index.html) |
 | **02** | **🤖 AI Prompt & Logic Match** | AI Solution Architecture, Cloud IoT, Smart Agri-Tech | 🖐️ Hand Pinch / 🖱️ Mouse | [`AIMatch/`](AIMatch/index.html) |
 | **03** | **🧩 Code Block Collector** | Computational Thinking, Programming Logic | 🖐️ Hand Pinch / 🖱️ Mouse | [`CodeBlock/`](CodeBlock/index.html) |
-| **04** | **📝 IT Curriculum Quiz Challenge** | Curriculum Knowledge & Career Pathways | 🖐️ Hand Select / 🖱️ Touch | [`Qustion/`](Qustion/index.html) |
+| **04** | **📝 IT Curriculum Quiz Challenge** | Curriculum Knowledge & Career Pathways | 🖐️ Hand Select / 🖱️ Touch | [`Quiz/`](Quiz/index.html) |
 | **05** | **⚡ CodeFlow · Logic Animator** | Algorithm Flowchart & Live Simulation (5 Worlds) | 🖐️ Camera / 🖱️ Drag | [`CodeFlow/`](CodeFlow/index.html) |
 | **06** | **🛰️ Packet Hero · Firewall Defense** | Cyber Security, SOC Defense, Packet Routing | 🖐️ Hand Gesture / 🖱️ Click | [`PacketHero/`](PacketHero/index.html) |
-| **07** | **🖥️ AR PC Builder** | Computer Hardware, Motherboard Architecture | 🖐️ AR Grab & Drop / 🖱️ Mouse | [`PcBuilding/`](PcBuilding/index.html) |
-| **08** | **🔓 IT AR Code Breaker** | Hologram Cryptography, Coding Challenge | 🖐️ Point & Pinch / 🖱️ Tap | [`ITcodebreaker/`](ITcodebreaker/index.html) |
-| **09** | **⚡ เกมสลัดแขนทะลุขีดจำกัด!** | Full Body Pose Tracking, 20s High Speed Rush | 🧍 Full Body Pose Tracking | [`67game/`](67game/index.html) |
+| **07** | **🖥️ AR PC Builder** | Computer Hardware, Motherboard Architecture | 🖐️ AR Grab & Drop / 🖱️ Mouse | [`PCBuilder/`](PCBuilder/index.html) |
+| **08** | **🔓 IT AR Code Breaker** | Hologram Cryptography, Coding Challenge | 🖐️ Point & Pinch / 🖱️ Tap | [`CodeBreaker/`](CodeBreaker/index.html) |
+| **09** | **⚡ เกมสลัดแขนทะลุขีดจำกัด!** | Full Body Pose Tracking, 20s High Speed Rush | 🧍 Full Body Pose Tracking | [`PoseArm/`](PoseArm/index.html) |
 
 ---
 
@@ -49,7 +49,7 @@
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
-├── Qustion/             # 📝 เกมที่ 4: ตอบคำถามชิงรางวัลหลักสูตร
+├── Quiz/                # 📝 เกมที่ 4: ตอบคำถามชิงรางวัลหลักสูตร
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
@@ -61,15 +61,15 @@
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
-├── PcBuilding/          # 🖥️ เกมที่ 7: ประกอบคอมพิวเตอร์ในโหมด AR
+├── PCBuilder/           # 🖥️ เกมที่ 7: ประกอบคอมพิวเตอร์ในโหมด AR
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
-├── ITcodebreaker/       # 🔓 เกมที่ 8: ถอดรหัส Hologram AR
+├── CodeBreaker/         # 🔓 เกมที่ 8: ถอดรหัส Hologram AR
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
-└── 67game/              # ⚡ เกมที่ 9: สลัดแขนทะลุขีดจำกัดด้วย Pose
+└── PoseArm/             # ⚡ เกมที่ 9: สลัดแขนทะลุขีดจำกัดด้วย Pose
     ├── index.html
     ├── style.css
     └── app.js
