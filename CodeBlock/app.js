@@ -563,6 +563,7 @@ function onResults(results) {
 
     // Dynamic Pinch Hysteresis based on normalized ratio
     // Easy to pinch (<= 0.42 of palm size), reliable to hold, easy to release (>= 0.65)
+    const wasPinching = isPinching;
     if (!isPinching) {
       if (normalizedPinchDist < 0.45 || pinchDistance < 55) {
         isPinching = true;
@@ -571,6 +572,11 @@ function onResults(results) {
       if (normalizedPinchDist > 0.68 && pinchDistance > 75) {
         isPinching = false;
       }
+    }
+
+    // Trigger pinch click on UI buttons (Next Level / Retry)
+    if (isPinching && !wasPinching) {
+      handlePinchClick(pointerX, pointerY);
     }
 
     handleDragAndDrop();
@@ -585,6 +591,24 @@ function onResults(results) {
         dropBlock(draggedBlock);
         draggedBlock = null;
       }
+    }
+  }
+}
+
+// Handler for pinching buttons (Next Level / Restart)
+function handlePinchClick(x, y) {
+  if (gameState === 'WIN' && currentLevelIndex < LEVEL_DEFINITIONS.length - 1) {
+    const btnX = CANVAS_WIDTH / 2 - 100;
+    const btnY = 318;
+    // Generous padding around the Next Level button (easy to pinch for kids)
+    if (x >= btnX - 35 && x <= btnX + 200 + 35 && y >= btnY - 25 && y <= btnY + 45 + 25) {
+      switchLevel(currentLevelIndex + 1);
+    }
+  } else if (gameState === 'GAMEOVER') {
+    const btnX = CANVAS_WIDTH / 2 - 70;
+    const btnY = 328;
+    if (x >= btnX - 35 && x <= btnX + 140 + 35 && y >= btnY - 25 && y <= btnY + 35 + 25) {
+      resetGame();
     }
   }
 }
@@ -1280,10 +1304,17 @@ function drawVictoryBanner() {
 
   // Render Next Level button if not last level
   if (currentLevelIndex < LEVEL_DEFINITIONS.length - 1) {
-    drawRoundedRect(canvasCtx, CANVAS_WIDTH / 2 - 80, bannerY + 102, 160, 36, 10, '#00ff88', '#ffffff', 1);
+    const btnX = CANVAS_WIDTH / 2 - 100;
+    const btnY = bannerY + 98;
+    const btnW = 200;
+    const btnH = 38;
+
+    const isHovered = pointerX >= btnX - 15 && pointerX <= btnX + btnW + 15 && pointerY >= btnY - 10 && pointerY <= btnY + btnH + 10;
+    
+    drawRoundedRect(canvasCtx, btnX, btnY, btnW, btnH, 12, isHovered ? '#ffffff' : '#00ff88', '#ffffff', isHovered ? 2 : 1);
     canvasCtx.fillStyle = '#0f0f17';
     canvasCtx.font = 'bold 15px "Kanit", sans-serif';
-    canvasCtx.fillText('ไปด่านถัดไป ➔', CANVAS_WIDTH / 2, bannerY + 125);
+    canvasCtx.fillText('👌 จีบนิ้วไปด่านถัดไป ➔', CANVAS_WIDTH / 2, bannerY + 123);
   }
 
   canvasCtx.restore();
