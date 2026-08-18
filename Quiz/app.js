@@ -256,10 +256,68 @@ camera.start().then(() => {
   statusText.textContent = 'ไม่สามารถเข้าถึงกล้องได้: ' + err.message;
 });
 
+let currentHandLandmarks = null;
+
+// Hand skeleton joint connections
+const HAND_CONNECTIONS = [
+  [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
+  [0, 5], [5, 6], [6, 7], [7, 8],       // Index
+  [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+  [0, 13], [13, 14], [14, 15], [15, 16],// Ring
+  [0, 17], [17, 18], [18, 19], [19, 20],// Pinky
+  [5, 9], [9, 13], [13, 17]             // Palm base
+];
+
+function drawHandSkeleton() {
+  if (!handDetected || !currentHandLandmarks) return;
+
+  canvasCtx.save();
+
+  // Draw bone lines
+  canvasCtx.lineWidth = 3;
+  canvasCtx.strokeStyle = isPinching ? 'rgba(255, 0, 127, 0.65)' : 'rgba(0, 240, 255, 0.55)';
+  canvasCtx.shadowColor = isPinching ? '#ff007f' : '#00f0ff';
+  canvasCtx.shadowBlur = 8;
+
+  for (const [i, j] of HAND_CONNECTIONS) {
+    const p1 = currentHandLandmarks[i];
+    const p2 = currentHandLandmarks[j];
+    if (!p1 || !p2) continue;
+
+    const x1 = (1.0 - p1.x) * CANVAS_WIDTH;
+    const y1 = p1.y * CANVAS_HEIGHT;
+    const x2 = (1.0 - p2.x) * CANVAS_WIDTH;
+    const y2 = p2.y * CANVAS_HEIGHT;
+
+    canvasCtx.beginPath();
+    canvasCtx.moveTo(x1, y1);
+    canvasCtx.lineTo(x2, y2);
+    canvasCtx.stroke();
+  }
+
+  // Draw glowing joint points
+  for (let i = 0; i < currentHandLandmarks.length; i++) {
+    const p = currentHandLandmarks[i];
+    const x = (1.0 - p.x) * CANVAS_WIDTH;
+    const y = p.y * CANVAS_HEIGHT;
+
+    canvasCtx.beginPath();
+    const isTip = [4, 8, 12, 16, 20].includes(i);
+    const radius = isTip ? 5 : 3;
+
+    canvasCtx.arc(x, y, radius, 0, Math.PI * 2);
+    canvasCtx.fillStyle = isTip ? (isPinching ? '#ffffff' : '#00ff88') : (isPinching ? '#ff007f' : '#00f0ff');
+    canvasCtx.fill();
+  }
+
+  canvasCtx.restore();
+}
+
 // Process Hand Landmark Coordinates
 function onResults(results) {
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     handDetected = true;
+    currentHandLandmarks = results.multiHandLandmarks[0];
     handLostGraceFrames = 0;
     const landmarks = results.multiHandLandmarks[0];
 
@@ -480,6 +538,19 @@ function render() {
   bgGrad.addColorStop(1, '#181926');
   canvasCtx.fillStyle = bgGrad;
   canvasCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  // Draw semi-transparent mirrored webcam background when camera is active so player sees their hands
+  if (videoElement && videoElement.readyState >= 2) {
+    canvasCtx.save();
+    canvasCtx.globalAlpha = 0.22; // subtle AR overlay
+    canvasCtx.translate(CANVAS_WIDTH, 0);
+    canvasCtx.scale(-1, 1);
+    canvasCtx.drawImage(videoElement, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    canvasCtx.restore();
+  }
+
+  // Draw Hand Skeleton / Hand joints overlay
+  drawHandSkeleton();
 
   drawBackgroundGrid();
 
