@@ -412,6 +412,19 @@ function draw() {
   ctx.fillStyle = '#060913';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+  // Draw semi-transparent mirrored webcam background when camera is active so player sees themselves
+  if (video && video.readyState >= 2) {
+    ctx.save();
+    ctx.globalAlpha = 0.22; // subtle cyberpunk AR overlay
+    ctx.translate(CANVAS_WIDTH, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.restore();
+  }
+
+  // Draw Hand Skeleton / Hand joints overlay
+  drawHandSkeleton();
+
   // Grid lines
   ctx.strokeStyle = 'rgba(0, 240, 255, 0.04)';
   ctx.lineWidth = 1;
@@ -909,10 +922,67 @@ toggleControlModeBtn.addEventListener('click', () => {
 // MediaPipe Hands & Camera Integration
 // -------------------------------------------------------------
 let lastPinchState = false;
+let currentHandLandmarks = null;
+
+// Hand skeleton joint connections
+const HAND_CONNECTIONS = [
+  [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
+  [0, 5], [5, 6], [6, 7], [7, 8],       // Index
+  [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+  [0, 13], [13, 14], [14, 15], [15, 16],// Ring
+  [0, 17], [17, 18], [18, 19], [19, 20],// Pinky
+  [5, 9], [9, 13], [13, 17]             // Palm base
+];
+
+function drawHandSkeleton() {
+  if (!handDetected || !currentHandLandmarks) return;
+
+  ctx.save();
+
+  // Draw bone lines
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = isLaserActive ? 'rgba(255, 0, 85, 0.65)' : 'rgba(0, 240, 255, 0.55)';
+  ctx.shadowColor = isLaserActive ? '#ff0055' : '#00f0ff';
+  ctx.shadowBlur = 8;
+
+  for (const [i, j] of HAND_CONNECTIONS) {
+    const p1 = currentHandLandmarks[i];
+    const p2 = currentHandLandmarks[j];
+    if (!p1 || !p2) continue;
+
+    const x1 = (1.0 - p1.x) * CANVAS_WIDTH;
+    const y1 = p1.y * CANVAS_HEIGHT;
+    const x2 = (1.0 - p2.x) * CANVAS_WIDTH;
+    const y2 = p2.y * CANVAS_HEIGHT;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  // Draw glowing joint points
+  for (let i = 0; i < currentHandLandmarks.length; i++) {
+    const p = currentHandLandmarks[i];
+    const x = (1.0 - p.x) * CANVAS_WIDTH;
+    const y = p.y * CANVAS_HEIGHT;
+
+    ctx.beginPath();
+    const isTip = [4, 8, 12, 16, 20].includes(i);
+    const radius = isTip ? 5 : 3;
+
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = isTip ? (isLaserActive ? '#ffffff' : '#00ff88') : (isLaserActive ? '#ff0055' : '#00f0ff');
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
 
 function onHandResults(results) {
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     handDetected = true;
+    currentHandLandmarks = results.multiHandLandmarks[0];
     statusDot.classList.add('active');
     statusText.innerText = '🖐️ จับมือได้แล้ว! (จีบนิ้ว = ยิงบั๊ก)';
 
@@ -950,6 +1020,7 @@ function onHandResults(results) {
     lastPinchState = isPinching;
   } else {
     handDetected = false;
+    currentHandLandmarks = null;
     statusDot.classList.remove('active');
     statusText.innerText = '📷 พร้อมใช้งาน (ใช้มือผ่านกล้อง หรือ คลิกเมาส์เล่นได้ทันที)';
     if (!isMouseMode) isLaserActive = false;
