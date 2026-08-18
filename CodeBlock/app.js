@@ -441,9 +441,9 @@ const camera = new Camera(videoElement, {
 
 camera.start().then(() => {
   statusDot.classList.add('active');
-  statusText.textContent = 'กล้องพร้อมทำงาน! ใช้มือหนีบ (Pinch) เพื่อลากบล็อกคำสั่ง';
+  statusText.textContent = 'กล้องพร้อมทำงาน! ใช้มือหนีบ (Pinch) หรือใช้เม้าส์/สัมผัสลากวางบล็อกได้';
 }).catch(err => {
-  statusText.textContent = 'ไม่สามารถเข้าถึงกล้องได้: ' + err.message;
+  statusText.textContent = 'โหมดเม้าส์/สัมผัส: ลากและวางบล็อกคำสั่งได้ทันที';
 });
 
 // --- Process MediaPipe Results ---
@@ -674,33 +674,73 @@ function dropBlock(block) {
   }
 }
 
-// Fallback Mouse Control
-canvasElement.addEventListener('mousedown', (e) => {
-  if (handDetected) return;
+// --- Mouse & Touch Control (Always enabled & responsive) ---
+let isMouseActive = false;
+
+function getCanvasCoords(e) {
   const rect = canvasElement.getBoundingClientRect();
-  pointerX = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width);
-  pointerY = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height);
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (clientX - rect.left) * (CANVAS_WIDTH / rect.width),
+    y: (clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
+  };
+}
+
+function handlePointerDown(e) {
+  isMouseActive = true;
+  const coords = getCanvasCoords(e);
+  pointerX = coords.x;
+  pointerY = coords.y;
+  indexX = -100;
+  thumbX = -100;
   isPinching = true;
   handleDragAndDrop();
-});
+}
 
-canvasElement.addEventListener('mousemove', (e) => {
-  if (handDetected) return;
-  const rect = canvasElement.getBoundingClientRect();
-  pointerX = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width);
-  pointerY = (e.clientY - rect.top) * (CANVAS_HEIGHT / rect.height);
+function handlePointerMove(e) {
+  if (!isMouseActive && !isPinching) {
+    const coords = getCanvasCoords(e);
+    pointerX = coords.x;
+    pointerY = coords.y;
+    return;
+  }
+  const coords = getCanvasCoords(e);
+  pointerX = coords.x;
+  pointerY = coords.y;
   if (isPinching) {
     handleDragAndDrop();
   }
-});
+}
 
-canvasElement.addEventListener('mouseup', () => {
-  if (handDetected) return;
+function handlePointerUp() {
+  isMouseActive = false;
   isPinching = false;
   if (draggedBlock) {
     dropBlock(draggedBlock);
     draggedBlock = null;
   }
+}
+
+canvasElement.addEventListener('mousedown', handlePointerDown);
+window.addEventListener('mousemove', handlePointerMove);
+window.addEventListener('mouseup', handlePointerUp);
+
+// Touch Support
+canvasElement.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  handlePointerDown(e);
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+  if (isMouseActive || isPinching) {
+    e.preventDefault();
+    handlePointerMove(e);
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  handlePointerUp();
 });
 
 // --- Main Render Loop ---

@@ -307,9 +307,10 @@
                     // For menu buttons (Start / Difficulty / Restart), allow dwell hover
                     updateDwellProgress();
                 } else {
-                    // For answer buttons, require Pinch to confirm (prevent accidental hover triggers)
+                    // For answer buttons: STRICTLY PINCH ONLY!
+                    // No dwell progress, show subtle hover state until player pinches
                     cursorRing.style.strokeDashoffset = 157;
-                    currentHoverElement.style.setProperty('--dwell', '30%');
+                    currentHoverElement.style.setProperty('--dwell', '0%');
                 }
                 return;
             }
