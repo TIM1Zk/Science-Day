@@ -914,15 +914,56 @@ restartBtn.addEventListener('click', () => {
 });
 
 toggleControlModeBtn.addEventListener('click', () => {
-  isMouseMode = !isMouseMode;
-  toggleControlModeBtn.innerText = isMouseMode ? '🎮 เมาส์/สัมผัส: เปิดใช้งาน' : '🖐️ เน้นกล้อง Hand Tracking';
+  if (isMouseMode) {
+    // Switch to Camera Mode
+    switchToCameraMode();
+  } else {
+    // Switch to Mouse Mode
+    switchToMouseMode();
+  }
 });
+
+function stopCamera() {
+  if (cameraInstance) {
+    try { cameraInstance.stop(); } catch(e) {}
+  }
+  if (video && video.srcObject) {
+    try {
+      video.srcObject.getTracks().forEach(track => track.stop());
+    } catch(e) {}
+    video.srcObject = null;
+  }
+  handDetected = false;
+  currentHandLandmarks = null;
+}
+
+function switchToMouseMode() {
+  isMouseMode = true;
+  stopCamera();
+  toggleControlModeBtn.innerText = '🖱️ โหมด: เมาส์ / สัมผัส (ปิดกล้อง)';
+  toggleControlModeBtn.style.color = '#ffb703';
+  toggleControlModeBtn.style.borderColor = '#ffb703';
+  statusDot.classList.add('active');
+  statusText.innerText = '🖱️ โหมดเมาส์ / สัมผัส (ปิดกล้องแล้ว)';
+}
+
+function switchToCameraMode() {
+  isMouseMode = false;
+  toggleControlModeBtn.innerText = '🖐️ โหมด: กล้อง AI Hands';
+  toggleControlModeBtn.style.color = '';
+  toggleControlModeBtn.style.borderColor = '';
+  statusDot.classList.remove('active');
+  statusText.innerText = 'กำลังเปิดกล้อง AI Hands...';
+  initCamera();
+}
 
 // -------------------------------------------------------------
 // MediaPipe Hands & Camera Integration
 // -------------------------------------------------------------
 let lastPinchState = false;
 let currentHandLandmarks = null;
+let cameraInstance = null;
+let handsInstance = null;
 
 // Hand skeleton joint connections
 const HAND_CONNECTIONS = [
@@ -935,7 +976,7 @@ const HAND_CONNECTIONS = [
 ];
 
 function drawHandSkeleton() {
-  if (!handDetected || !currentHandLandmarks) return;
+  if (isMouseMode || !handDetected || !currentHandLandmarks) return;
 
   ctx.save();
 
@@ -980,6 +1021,8 @@ function drawHandSkeleton() {
 }
 
 function onHandResults(results) {
+  if (isMouseMode) return;
+
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     handDetected = true;
     currentHandLandmarks = results.multiHandLandmarks[0];
@@ -1023,44 +1066,57 @@ function onHandResults(results) {
     currentHandLandmarks = null;
     statusDot.classList.remove('active');
     statusText.innerText = '📷 พร้อมใช้งาน (ใช้มือผ่านกล้อง หรือ คลิกเมาส์เล่นได้ทันที)';
-    if (!isMouseMode) isLaserActive = false;
+    isLaserActive = false;
   }
 }
 
-// Initialize Hands
-if (window.Hands) {
-  const hands = new Hands({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-  });
+// Initialize Hands & Camera
+function initCamera() {
+  if (isMouseMode) return;
 
-  hands.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 1,
-    minDetectionConfidence: 0.55,
-    minTrackingConfidence: 0.55
-  });
-
-  hands.onResults(onHandResults);
-
-  if (window.Camera && video) {
-    const camera = new Camera(video, {
-      onFrame: async () => {
-        await hands.send({ image: video });
-      },
-      width: 640,
-      height: 480
+  if (!handsInstance && window.Hands) {
+    handsInstance = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
 
-    camera.start().then(() => {
+    handsInstance.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55
+    });
+
+    handsInstance.onResults(onHandResults);
+  }
+
+  if (window.Camera && video) {
+    if (!cameraInstance) {
+      cameraInstance = new Camera(video, {
+        onFrame: async () => {
+          if (!isMouseMode && handsInstance) {
+            await handsInstance.send({ image: video });
+          }
+        },
+        width: 640,
+        height: 480
+      });
+    }
+
+    cameraInstance.start().then(() => {
+      statusDot.classList.add('active');
       statusText.innerText = '📷 กล้องพร้อมใช้งาน (จีบนิ้ว หรือ คลิกเมาส์)';
     }).catch(err => {
       console.warn('Camera not available or blocked, falling back to mouse:', err);
-      statusText.innerText = '🖱️ โหมดเมาส์ / สัมผัส (พร้อมเล่น)';
+      switchToMouseMode();
     });
+  } else {
+    switchToMouseMode();
   }
-} else {
-  statusText.innerText = '🖱️ โหมดเมาส์ / สัมผัส (พร้อมเล่น)';
 }
+
+// Start with Camera Mode by default
+isMouseMode = false;
+initCamera();
 
 // Start Game Loop
 requestAnimationFrame(gameLoop);

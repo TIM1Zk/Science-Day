@@ -416,6 +416,10 @@ function drawParticles() {
   }
 }
 
+const modeToggleBtn = document.getElementById('modeToggleBtn');
+let isMouseOnlyMode = false;
+let cameraInstance = null;
+
 // --- MediaPipe Hands Setup ---
 const hands = new Hands({
   locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
@@ -423,28 +427,87 @@ const hands = new Hands({
 
 hands.setOptions({
   maxNumHands: 1,
-  modelComplexity: 1,
-  minDetectionConfidence: 0.65,
-  minTrackingConfidence: 0.65
+  modelComplexity: 0, // Quick & lightweight processing
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6
 });
 
 hands.onResults(onResults);
 
 // Camera setup
-const camera = new Camera(videoElement, {
-  onFrame: async () => {
-    await hands.send({ image: videoElement });
-  },
-  width: 1280,
-  height: 720
-});
+function initCamera() {
+  if (isMouseOnlyMode) return;
+  
+  if (!cameraInstance) {
+    cameraInstance = new Camera(videoElement, {
+      onFrame: async () => {
+        if (!isMouseOnlyMode && hands) {
+          await hands.send({ image: videoElement });
+        }
+      },
+      width: 640,
+      height: 480
+    });
+  }
 
-camera.start().then(() => {
+  cameraInstance.start().then(() => {
+    statusDot.classList.add('active');
+    statusText.textContent = 'กล้องพร้อมทำงาน! ใช้มือหนีบ (Pinch) หรือใช้เม้าส์/สัมผัสลากวางบล็อกได้';
+  }).catch(err => {
+    statusText.textContent = 'โหมดเม้าส์/สัมผัส: ลากและวางบล็อกคำสั่งได้ทันที';
+    switchToMouseMode();
+  });
+}
+
+function stopCamera() {
+  if (cameraInstance) {
+    try { cameraInstance.stop(); } catch(e) {}
+  }
+  if (videoElement && videoElement.srcObject) {
+    try {
+      videoElement.srcObject.getTracks().forEach(t => t.stop());
+    } catch(e) {}
+    videoElement.srcObject = null;
+  }
+  handDetected = false;
+  currentHandLandmarks = null;
+}
+
+function switchToMouseMode() {
+  isMouseOnlyMode = true;
+  stopCamera();
+  if (modeToggleBtn) {
+    modeToggleBtn.innerText = '🖱️ โหมด: เมาส์ / สัมผัส';
+    modeToggleBtn.style.color = '#ffb703';
+    modeToggleBtn.style.borderColor = '#ffb703';
+  }
   statusDot.classList.add('active');
-  statusText.textContent = 'กล้องพร้อมทำงาน! ใช้มือหนีบ (Pinch) หรือใช้เม้าส์/สัมผัสลากวางบล็อกได้';
-}).catch(err => {
-  statusText.textContent = 'โหมดเม้าส์/สัมผัส: ลากและวางบล็อกคำสั่งได้ทันที';
-});
+  statusText.textContent = 'โหมดเม้าส์ / สัมผัส: ลากและวางบล็อกคำสั่งได้ทันที (ปิดกล้องแล้ว)';
+}
+
+function switchToCameraMode() {
+  isMouseOnlyMode = false;
+  if (modeToggleBtn) {
+    modeToggleBtn.innerText = '🖐️ โหมด: กล้อง AI';
+    modeToggleBtn.style.color = '';
+    modeToggleBtn.style.borderColor = '';
+  }
+  statusDot.classList.remove('active');
+  statusText.textContent = 'กำลังเปิดกล้อง AI...';
+  initCamera();
+}
+
+if (modeToggleBtn) {
+  modeToggleBtn.addEventListener('click', () => {
+    if (isMouseOnlyMode) {
+      switchToCameraMode();
+    } else {
+      switchToMouseMode();
+    }
+  });
+}
+
+initCamera();
 
 let currentHandLandmarks = null;
 
@@ -777,31 +840,36 @@ function handlePointerDown(e) {
   indexX = -100;
   thumbX = -100;
   isPinching = true;
-  handleDragAndDrop();
-}
 
-function handlePointerMove(e) {
-  if (!isMouseActive && !isPinching) {
-    const coords = getCanvasCoords(e);
-    pointerX = coords.x;
-    pointerY = coords.y;
-    return;
-  }
-  const coords = getCanvasCoords(e);
-  pointerX = coords.x;
-  pointerY = coords.y;
-  if (isPinching) {
+  if (gameState === 'WIN' || gameState === 'GAMEOVER') {
+    handlePinchClick(pointerX, pointerY);
+  } else {
     handleDragAndDrop();
   }
 }
 
+function handlePointerMove(e) {
+  const coords = getCanvasCoords(e);
+  pointerX = coords.x;
+  pointerY = coords.y;
+
+  if (isMouseActive || isPinching) {
+    if (draggedBlock) {
+      draggedBlock.x = pointerX - dragOffsetX;
+      draggedBlock.y = pointerY - dragOffsetY;
+    } else {
+      handleDragAndDrop();
+    }
+  }
+}
+
 function handlePointerUp() {
-  isMouseActive = false;
-  isPinching = false;
   if (draggedBlock) {
     dropBlock(draggedBlock);
     draggedBlock = null;
   }
+  isMouseActive = false;
+  isPinching = false;
 }
 
 canvasElement.addEventListener('mousedown', handlePointerDown);
