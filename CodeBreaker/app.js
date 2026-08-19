@@ -250,7 +250,7 @@
             let hands;
             try {
                 hands = new Hands({
-                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                    locateFile: (file) => `../libs/mediapipe/hands/${file}`
                 });
             } catch (e) {
                 statusText.innerText = "AI MODEL FAILED - TAP MODE";

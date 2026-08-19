@@ -968,7 +968,7 @@ function onHandResults(results) {
 
 if (window.Hands) {
   const hands = new Hands({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    locateFile: (file) => `../libs/mediapipe/hands/${file}`
   });
 
   hands.setOptions({

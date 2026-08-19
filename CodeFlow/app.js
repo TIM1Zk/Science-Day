@@ -1724,11 +1724,11 @@ const Hand={
       await document.documentElement.requestFullscreen();}catch(e){}
     camMsg('อนุญาตเรียบร้อย ✔ กำลังโหลดโมเดลตรวจจับมือ…');
     try{
-      await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js');
+      await loadScript('../libs/mediapipe/hands/hands.js');
       if(!window.Hands)throw new Error('no lib');
       this.video.srcObject=stream;await this.video.play();
       this.ctx=this.cvs.getContext('2d');
-      this.hands=new window.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
+      this.hands=new window.Hands({locateFile:f=>`../libs/mediapipe/hands/${f}`});
       this.hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.6,minTrackingConfidence:.6});
       this.hands.onResults(r=>this.onResults(r));
       this.on=true;this.loading=false;
