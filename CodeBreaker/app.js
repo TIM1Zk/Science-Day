@@ -105,6 +105,52 @@
         const notifElement = document.getElementById('notification');
         const particleLayer = document.getElementById('particle-layer');
         const muteBtn = document.getElementById('mute-btn');
+        const modeToggleBtn = document.getElementById('mode-toggle-btn');
+        let isMouseMode = false; // false = Camera AI mode, true = Mouse/Touch mode
+
+        // --- Mode Toggle Handler ---
+        if (modeToggleBtn) {
+            modeToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isMouseMode = !isMouseMode;
+                if (isMouseMode) {
+                    modeToggleBtn.classList.add('mouse-mode');
+                    modeToggleBtn.innerText = "🖱️ โหมด: เมาส์ / สัมผัส";
+                    statusDot.classList.add('active');
+                    statusText.innerText = "MOUSE MODE ACTIVE";
+                    
+                    // Enable start button immediately if in init state
+                    const btnStart = document.getElementById('btn-start');
+                    if (btnStart) {
+                        btnStart.style.opacity = "1";
+                        btnStart.style.pointerEvents = "auto";
+                        btnStart.innerHTML = "[ START GAME (MOUSE) ]";
+                    }
+                    if (gameState === 'init') {
+                        gameState = 'start';
+                    }
+                    // Hide AR hand cursor
+                    if (cursorElement) cursorElement.style.display = 'none';
+                    resetDwell();
+                } else {
+                    modeToggleBtn.classList.remove('mouse-mode');
+                    modeToggleBtn.innerText = "🖐️ โหมด: กล้อง AI";
+                    if (isHandVisible) {
+                        statusDot.classList.add('active');
+                        statusText.innerText = "HAND DETECTED";
+                    } else {
+                        statusDot.classList.remove('active');
+                        statusText.innerText = "SHOW YOUR HAND";
+                    }
+                    const btnStart = document.getElementById('btn-start');
+                    if (btnStart && !isHandVisible) {
+                        btnStart.style.opacity = "0.5";
+                        btnStart.style.pointerEvents = "none";
+                        btnStart.innerHTML = "[ START AR EXPERIENCE ]<br><small style=\"font-size: 0.7rem; color: #aaa;\">Waiting for Hand Detection...</small>";
+                    }
+                }
+            });
+        }
 
         // --- Audio (synthesized, no external assets) ---
         let audioCtx = null;
@@ -164,12 +210,18 @@
                 statusText.innerText = "NO CAMERA - TAP MODE";
                 statusDot.classList.remove('active');
                 document.getElementById('fallback-hint').style.display = 'block';
+                isMouseMode = true;
+                if (modeToggleBtn) {
+                    modeToggleBtn.classList.add('mouse-mode');
+                    modeToggleBtn.innerText = "🖱️ โหมด: เมาส์ / สัมผัส";
+                }
                 enableFallbackClicks();
                 
                 // still allow starting via touch/mouse even without a camera
                 const btnStart = document.getElementById('btn-start');
                 btnStart.style.opacity = "1";
                 btnStart.style.pointerEvents = "auto";
+                btnStart.innerHTML = "[ START GAME (MOUSE) ]";
                 gameState = 'start';
                 requestAnimationFrame(gameLoop);
             }
@@ -183,6 +235,11 @@
                 });
             } catch (e) {
                 statusText.innerText = "AI MODEL FAILED - TAP MODE";
+                isMouseMode = true;
+                if (modeToggleBtn) {
+                    modeToggleBtn.classList.add('mouse-mode');
+                    modeToggleBtn.innerText = "🖱️ โหมด: เมาส์ / สัมผัส";
+                }
                 enableFallbackClicks();
                 return;
             }
@@ -203,25 +260,33 @@
             });
             camera.start().catch(() => {
                 statusText.innerText = "CAMERA FAILED - TAP MODE";
+                isMouseMode = true;
+                if (modeToggleBtn) {
+                    modeToggleBtn.classList.add('mouse-mode');
+                    modeToggleBtn.innerText = "🖱️ โหมด: เมาส์ / สัมผัส";
+                }
                 enableFallbackClicks();
             });
 
-            enableFallbackClicks(); // Always enable fallback clicks just in case
+            enableFallbackClicks(); // Always enable fallback clicks
             requestAnimationFrame(gameLoop);
         }
 
-        // Always allow real touch/mouse clicks as a fallback input path
+        // Always allow real touch/mouse clicks
         function enableFallbackClicks() {
             document.body.addEventListener('click', (e) => {
                 if (isClickLocked) return; // Prevent double clicking
                 const target = e.target.closest('.hoverable');
                 if (!target || target.style.pointerEvents === 'none') return;
+                sfxClick();
                 handleAction(target);
             });
         }
 
         // --- Hand Tracking Core ---
         function processHandResults(results) {
+            if (isMouseMode) return; // Ignore hand tracking when in mouse mode
+
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 isHandVisible = true;
                 handLostAt = 0;
@@ -269,6 +334,11 @@
         }
 
         function updateHandCursor() {
+            if (isMouseMode) {
+                cursorElement.style.display = 'none';
+                return;
+            }
+
             if (isHandVisible) {
                 cursorElement.style.display = 'block';
                 smoothX += (targetX - smoothX) * 0.35;
@@ -292,7 +362,7 @@
         }
 
         function checkFingerHover() {
-            if (!isHandVisible || isClickLocked) {
+            if (isMouseMode || !isHandVisible || isClickLocked) {
                 resetDwell();
                 return;
             }
