@@ -134,7 +134,7 @@ function shootConfetti() {
    สถานะเกม
    ============================================================ */
 const TIME_LIMIT = 20;
-const LINE_Y = 0.5;          // ตำแหน่งเส้นบนหน้าจอ (0 = บนสุด, 1 = ล่างสุด)
+const LINE_Y = 0.62;         // ตำแหน่งเส้นบนหน้าจอ (ปรับให้ต่ำลงมาที่ระดับ 62% ของจอ เพื่อให้สลัดแขนสะดวกขึ้น)
 const HYSTERESIS = 0.05;     // ครึ่งความสูงโซนกันสั่น
 const UPPER_BOUND = LINE_Y - HYSTERESIS;
 const LOWER_BOUND = LINE_Y + HYSTERESIS;
