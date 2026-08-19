@@ -186,9 +186,9 @@ html,body{
 /* ================= MOTHERBOARD ================= */
 #boardWrap{
   position:absolute; z-index:10;
-  left:calc(50% - 84px); top:50%;
-  transform:translate(-50%,-52%);
-  width:min(680px, 64vw);
+  left:50%; top:50%;
+  transform:translate(-50%,-48%);
+  width:min(640px, 54vw);
 }
 #board{
   position:relative;
@@ -257,31 +257,43 @@ html,body{
   font-size:20px;
 }
 
-/* ================= TRAY (side panel) ================= */
-#trayBar{
-  position:absolute; top:78px; right:48px; bottom:16px; z-index:15;
-  width:120px;
+/* ================= 2-SIDE TRAYS (Left & Right) ================= */
+.tray-bar{
+  position:absolute; top:88px; bottom:24px; z-index:15;
+  width:124px;
   padding:14px 10px;
   display:flex; flex-direction:column; align-items:center;
-  background:rgba(3,5,9,0.5);
+  background:rgba(3,5,9,0.65);
   border:1px solid var(--line);
   border-radius:18px;
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   overflow-y:auto; overflow-x:hidden;
+  box-shadow:0 12px 32px rgba(0,0,0,0.6);
 }
-#trayLabel{
-  font-family:var(--font-display); font-size:10px; letter-spacing:0.18em;
+.tray-bar.left{
+  left:32px;
+  border-color:rgba(52,234,255,0.25);
+}
+.tray-bar.right{
+  right:32px;
+  border-color:rgba(255,61,154,0.25);
+}
+.tray-label{
+  font-family:var(--font-display); font-size:10px; letter-spacing:0.14em;
   color:var(--text-dim); text-transform:uppercase; text-align:center;
-  margin-bottom:14px; opacity:0.8; flex-shrink:0;
+  margin-bottom:12px; opacity:0.85; flex-shrink:0; line-height:1.4;
 }
-#tray{
+.tray-bar.left .tray-label{ color:var(--cyan); }
+.tray-bar.right .tray-label{ color:var(--magenta); }
+
+.tray-container{
   display:flex; flex-direction:column; align-items:center;
-  gap:14px; margin:0; width:100%;
+  gap:12px; margin:0; width:100%;
 }
 .part{
   position:relative;
-  width:88px; height:88px;
+  width:92px; height:92px;
   background:var(--panel-glass-strong);
   border:1px solid var(--line);
   border-radius:16px;
@@ -297,9 +309,9 @@ html,body{
   touch-action:none;
   overflow:hidden;
 }
-.part:hover{transform:translateX(-4px); box-shadow:0 12px 28px rgba(52,234,255,0.2);}
-.part .icon{font-size:26px; filter:drop-shadow(0 0 6px rgba(52,234,255,0.5));}
-.part .name{font-family:var(--font-body); font-size:10.5px; letter-spacing:0.03em; color:var(--text-dim);}
+.part:hover{transform:scale(1.05); box-shadow:0 12px 28px rgba(52,234,255,0.25);}
+.part .icon{font-size:28px; filter:drop-shadow(0 0 6px rgba(52,234,255,0.5));}
+.part .name{font-family:var(--font-body); font-size:11px; font-weight:600; letter-spacing:0.03em; color:var(--text);}
 .part.dragging{
   position:fixed; z-index:100; pointer-events:none;
   box-shadow:0 0 30px rgba(52,234,255,0.55);

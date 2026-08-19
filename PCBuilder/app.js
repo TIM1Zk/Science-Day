@@ -58,36 +58,48 @@ const state = {
 /* DOM shortcuts */
 const $ = (id)=>document.getElementById(id);
 const boardEl = $('board');
-const trayEl = $('tray');
+const trayLeftEl = $('trayLeft');
+const trayRightEl = $('trayRight');
 const cursorEl = $('cursor');
 const toastLayer = $('toastLayer');
 const factCard = $('factCard');
 
 /* -------------------------------------------------------------------
-   BUILD TRAY UI
+   BUILD 2-SIDE TRAY UI (Left: 3 parts, Right: 3 parts)
    ------------------------------------------------------------------- */
 function buildTray(){
-  trayEl.innerHTML = '';
-  PARTS.forEach((p,i)=>{
+  if(trayLeftEl) trayLeftEl.innerHTML = '';
+  if(trayRightEl) trayRightEl.innerHTML = '';
+  
+  PARTS.forEach((p, i)=>{
     const el = document.createElement('div');
     el.className = 'part';
     el.id = 'tray-'+p.id;
     el.dataset.partId = p.id;
-    el.dataset.order = i; // stable position, used to keep icons "in place" when returned
+    el.dataset.order = i; // stable position index
     el.innerHTML = `<div class="icon">${p.icon}</div><div class="name">${p.name}</div>`;
-    trayEl.appendChild(el);
+    
+    // First 3 parts on the Left Tray (CPU, Cooler, RAM), Next 3 on the Right Tray (GPU, SSD, PSU)
+    if(i < 3){
+      el.dataset.side = 'left';
+      if(trayLeftEl) trayLeftEl.appendChild(el);
+    } else {
+      el.dataset.side = 'right';
+      if(trayRightEl) trayRightEl.appendChild(el);
+    }
   });
 }
 
-/* Re-insert a returned part at its original stable slot among whatever
-   parts are currently still in the tray, instead of dumping it at the end
-   (which used to make icons jump around every time a drop failed). */
+/* Re-insert a returned part at its original stable slot among its container */
 function insertPartInOrder(el){
   const order = parseInt(el.dataset.order, 10);
-  const next = Array.from(trayEl.children)
-    .find(sib => parseInt(sib.dataset.order,10) > order);
-  if(next) trayEl.insertBefore(el, next);
-  else trayEl.appendChild(el);
+  const targetTray = el.dataset.side === 'left' ? trayLeftEl : trayRightEl;
+  if(!targetTray) return;
+  
+  const next = Array.from(targetTray.children)
+    .find(sib => parseInt(sib.dataset.order, 10) > order);
+  if(next) targetTray.insertBefore(el, next);
+  else targetTray.appendChild(el);
 }
 buildTray();
 
@@ -412,7 +424,8 @@ function enableMouseInput(){
   if(mouseInputBound) return;
   mouseInputBound = true;
 
-  trayEl.addEventListener('pointerdown', onPointerDown);
+  if(trayLeftEl) trayLeftEl.addEventListener('pointerdown', onPointerDown);
+  if(trayRightEl) trayRightEl.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
 }
