@@ -120,6 +120,34 @@ html,body{
 .hud-chip.score .value{color:var(--green);}
 @keyframes pulseWarn{0%,100%{opacity:1;}50%{opacity:0.35;}}
 
+#modeToggleBtn{
+  font-family:var(--font-body); font-weight:600; font-size:13px;
+  color:var(--cyan);
+  background:rgba(52,234,255,0.12);
+  border:1px solid rgba(52,234,255,0.4);
+  border-radius:14px;
+  padding:10px 16px;
+  cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+  transition:all 0.15s ease;
+  white-space:nowrap;
+}
+#modeToggleBtn:hover{
+  background:var(--cyan);
+  color:var(--void);
+  box-shadow:0 0 16px rgba(52,234,255,0.5);
+}
+#modeToggleBtn.mouse-mode{
+  color:var(--amber);
+  background:rgba(255,170,0,0.12);
+  border-color:rgba(255,170,0,0.4);
+}
+#modeToggleBtn.mouse-mode:hover{
+  background:var(--amber);
+  color:var(--void);
+  box-shadow:0 0 16px rgba(255,170,0,0.5);
+}
+
 #hintBtn{
   font-family:var(--font-body); font-weight:600; font-size:13px;
   color:var(--void);
@@ -130,6 +158,7 @@ html,body{
   box-shadow:0 6px 20px rgba(52,234,255,0.35);
   display:flex; align-items:center; gap:8px;
   transition:transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+  white-space:nowrap;
 }
 #hintBtn:active{transform:scale(0.95);}
 #hintBtn:disabled{

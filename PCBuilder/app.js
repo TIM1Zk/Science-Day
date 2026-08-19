@@ -352,10 +352,12 @@ function startGame(mode){
   if(mode==='camera'){
     initCamera();
   } else {
+    stopCamera();
     setModeTag(false, 'โหมดลาก-วาง (ไม่ใช้กล้อง)');
     $('bgFallback').classList.add('show');
     enableMouseInput();
   }
+  updateModeToggleButton();
 }
 
 function tick(){
@@ -389,10 +391,12 @@ function endGame(success){
 $('btnStartCam').addEventListener('click', ()=>startGame('camera'));
 $('btnStartMouse').addEventListener('click', ()=>startGame('mouse'));
 $('btnRestart1').addEventListener('click', ()=>{
+  stopCamera();
   $('screenSuccess').classList.add('hidden');
   $('screenStart').classList.remove('hidden');
 });
 $('btnRestart2').addEventListener('click', ()=>{
+  stopCamera();
   $('screenTimeup').classList.add('hidden');
   $('screenStart').classList.remove('hidden');
 });
@@ -593,6 +597,23 @@ function drawHandSkeleton(lm){
 /* --- camera bootstrap with graceful error handling --------------------- */
 let handsInstance = null;
 let cameraInstance = null;
+let isProcessingHandFrame = false;
+
+async function stopCamera(){
+  if(cameraInstance){
+    try{ await cameraInstance.stop(); }catch(e){}
+    cameraInstance = null;
+  }
+  if(videoEl && videoEl.srcObject){
+    try{
+      videoEl.srcObject.getTracks().forEach(track => track.stop());
+    }catch(e){}
+    videoEl.srcObject = null;
+  }
+  hctx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+  cursorEl.style.display = 'none';
+  state.cameraReady = false;
+}
 
 async function initCamera(){
   setModeTag(false, 'กำลังเปิดกล้อง…');
@@ -607,16 +628,33 @@ async function initCamera(){
       });
       handsInstance.setOptions({
         maxNumHands:1,
-        modelComplexity:1,
-        minDetectionConfidence:0.65,
-        minTrackingConfidence:0.6,
+        modelComplexity:0, // ใช้ modelComplexity 0 เพื่อให้ประมวลผลเร็ว ไม่แล็กและไม่ค้าง
+        minDetectionConfidence:0.6,
+        minTrackingConfidence:0.55,
       });
       handsInstance.onResults(onHandResults);
     }
 
+    // Stop existing camera instance if any
+    if(cameraInstance){
+      try{ await cameraInstance.stop(); }catch(e){}
+      cameraInstance = null;
+    }
+
     cameraInstance = new Camera(videoEl, {
-      onFrame: async ()=>{ await handsInstance.send({image:videoEl}); },
-      width:960, height:720,
+      onFrame: async ()=>{
+        if(state.inputMode !== 'camera' || !state.running) return;
+        if(isProcessingHandFrame) return; // Drop frame if previous is still processing to prevent freezing
+        isProcessingHandFrame = true;
+        try{
+          await handsInstance.send({image:videoEl});
+        }catch(err){
+          console.warn('Frame processing error:', err);
+        }finally{
+          isProcessingHandFrame = false;
+        }
+      },
+      width:640, height:480, // 640x480 ประมวลผลลื่นไหลมาก ลดภาระ CPU/GPU ป้องกันเครื่องค้าง
     });
     await cameraInstance.start();
 
@@ -636,7 +674,42 @@ function handleCameraFailure(){
   setModeTag(false, 'ไม่พบกล้อง — ใช้โหมดลาก-วางแทน');
   showToast('ไม่สามารถเข้าถึงกล้องได้ สลับเป็นโหมดลาก-วาง','info');
   enableMouseInput();
+  updateModeToggleButton();
 }
+
+function updateModeToggleButton(){
+  const btn = $('modeToggleBtn');
+  if(!btn) return;
+  if(state.inputMode === 'mouse'){
+    btn.classList.add('mouse-mode');
+    btn.innerText = '🖱️ โหมด: เมาส์ / สัมผัส';
+  } else {
+    btn.classList.remove('mouse-mode');
+    btn.innerText = '🖐️ โหมด: กล้อง AR';
+  }
+}
+
+// Mode toggle button handler
+$('modeToggleBtn')?.addEventListener('click', async ()=>{
+  if(!state.running) return;
+  if(state.inputMode === 'camera'){
+    // Switch to mouse mode
+    state.inputMode = 'mouse';
+    await stopCamera();
+    $('bgFallback').classList.add('show');
+    setModeTag(false, 'โหมดลาก-วาง (ปิดกล้อง)');
+    enableMouseInput();
+    updateModeToggleButton();
+    showToast('สลับเป็นโหมดเมาส์ / สัมผัสแล้ว', 'info');
+  } else {
+    // Switch to camera mode
+    state.inputMode = 'camera';
+    updateModeToggleButton();
+    $('bgFallback').classList.remove('show');
+    initCamera();
+    showToast('กำลังเปิดกล้อง AR...', 'info');
+  }
+});
 
 /* If the start screen's camera permission is denied even before pressing
    start (e.g. previously blocked), we still let the ghost button work. */
