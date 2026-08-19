@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Fruit Ninja — IT Maejo Open House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe Hands & Camera CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="kicker">Maejo University • IT Open House</span>
+      <h1 class="header-title">🍉 CYBER FRUIT NINJA</h1>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">กำลังเปิดกล้อง AI Hands...</span>
+    </div>
+
+    <!-- Header Controls -->
+    <div class="header-controls">
+      <button class="btn btn-mode" id="modeToggleBtn" title="สลับโหมดควบคุม">🖐️ โหมด: กล้อง AI (ดาบมือ)</button>
+      <a href="../index.html" class="btn btn-home" style="text-decoration: none;">🏠 หน้าหลัก</a>
+    </div>
+  </header>
+
+  <!-- Main Game Stage Canvas -->
+  <main class="game-container">
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top In-Game HUD -->
+    <div class="game-hud" id="gameHud">
+      <div class="hud-box score-box">
+        <span class="hud-label">คะแนน (SCORE)</span>
+        <span class="hud-value" id="scoreVal">0</span>
+      </div>
+
+      <div class="hud-box timer-box">
+        <span class="hud-label">เวลาที่เหลือ (TIME)</span>
+        <span class="hud-value" id="timerVal">45</span>
+      </div>
+
+      <div class="hud-box combo-box">
+        <span class="hud-label">คอมโบ (COMBO)</span>
+        <span class="hud-value" id="comboVal">x0</span>
+      </div>
+
+      <div class="hud-box lives-box" id="livesContainer">
+        <span class="hud-label">โอกาสพลาด</span>
+        <div class="lives-hearts" id="livesHearts">❤️❤️❤️</div>
+      </div>
+    </div>
+
+    <!-- Start / Tutorial Screen Overlay -->
+    <div class="overlay-screen" id="startScreen">
+      <div class="modal-card">
+        <div class="kicker-banner">IT MAEJO 2570 • SPECIAL SECTOR</div>
+        <h1 class="modal-title">CYBER FRUIT NINJA</h1>
+        <p class="modal-desc">
+          สวมบทบาทเป็น <strong>Cyber Ninja</strong> ฟาดฟันผลไม้ไอทีและชีวภาพแม่โจ้ด้วย <b>มือเปล่า</b> หน้ากล้องเว็บแคม หรือลากเมาส์ฟันสะบั้น!
+        </p>
+
+        <div class="rules-grid">
+          <div class="rule-item good">
+            <span class="rule-icon">🍉 🍓 🍊 🍍</span>
+            <div class="rule-text"><strong>ฟันผลไม้:</strong> ได้คะแนน +100 ถึง +250 แต้ม ยิ่งฟันรวดเดียวหลายลูกยิ่งได้ Combo สูง!</div>
+          </div>
+          <div class="rule-item bad">
+            <span class="rule-icon">💣 💥</span>
+            <div class="rule-text"><strong>ระวังระเบิดบั๊ก:</strong> อย่าฟันโดนระเบิด! หัก 1 หัวใจและลดคะแนนทันที</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnStartGame">⚔️ เริ่มฟันผลไม้เลย! (Start)</button>
+      </div>
+    </div>
+
+    <!-- Game Over / Victory Modal -->
+    <div class="overlay-screen hidden" id="gameOverScreen">
+      <div class="modal-card">
+        <div class="kicker-banner" id="gameOverBadge">MATCH FINISHED</div>
+        <h1 class="modal-title" id="gameOverTitle">🎉 จบเกมยอดเยี่ยม!</h1>
+        <p class="modal-desc" id="gameOverDesc">คุณทำคะแนนสะบั้นผลไม้ได้อย่างน่าทึ่งในรอบนี้</p>
+
+        <div class="stat-summary">
+          <div class="stat-col">
+            <div class="stat-num" id="finalScore">0</div>
+            <div class="stat-lbl">คะแนนรวม</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalSliced">0</div>
+            <div class="stat-lbl">ผลไม้ที่ฟันโดน</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalMaxCombo">0</div>
+            <div class="stat-lbl">คอมโบสูงสุด</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnRestartGame">🔁 เล่นอีกครั้ง (Play Again)</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

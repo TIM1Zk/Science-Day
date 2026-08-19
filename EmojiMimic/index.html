@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Hand Mimic: เลียนแบบท่ามืออิโมจิ — IT Maejo Open House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe Hands & Camera CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="kicker">Maejo University • IT Open House</span>
+      <h1 class="header-title">🎭 EMOJI HAND MIMIC: ทายท่ามืออิโมจิ</h1>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">กำลังเปิดกล้อง AI Hands...</span>
+    </div>
+
+    <!-- Header Controls -->
+    <div class="header-controls">
+      <button class="btn btn-mode" id="modeToggleBtn" title="สลับโหมดควบคุม">🖐️ โหมด: กล้อง AI จับท่ามือ</button>
+      <a href="../index.html" class="btn btn-home" style="text-decoration: none;">🏠 หน้าหลัก</a>
+    </div>
+  </header>
+
+  <!-- Main Game Stage -->
+  <main class="game-stage">
+    
+    <!-- Camera Background & Hand Skeleton -->
+    <div class="camera-layer">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="handCanvas"></canvas>
+      <div class="ar-vignette"></div>
+      <div class="ar-grid"></div>
+    </div>
+
+    <!-- Live Stage HUD Container -->
+    <div class="stage-container">
+      
+      <!-- Top Scoreboard Bar -->
+      <div class="top-stats-bar">
+        <div class="stat-chip score-chip">
+          <span class="chip-label">คะแนนรวม</span>
+          <span class="chip-num" id="scoreVal">0</span>
+        </div>
+
+        <div class="stat-chip timer-chip">
+          <span class="chip-label">เวลาที่เหลือ</span>
+          <span class="chip-num" id="timerVal">45</span>
+        </div>
+
+        <div class="stat-chip streak-chip">
+          <span class="chip-label">คอมโบต่อเนื่อง</span>
+          <span class="chip-num" id="streakVal">🔥 x0</span>
+        </div>
+
+        <div class="stat-chip correct-chip">
+          <span class="chip-label">ผ่านแล้ว</span>
+          <span class="chip-num" id="matchedVal">0 ท่า</span>
+        </div>
+      </div>
+
+      <!-- Main Challenge Arena -->
+      <div class="challenge-arena">
+        
+        <!-- Target Emoji Box (โจทย์ที่ต้องเลียนแบบ) -->
+        <div class="target-card" id="targetCard">
+          <div class="card-badge">🎯 ทำท่ามือตามนี้!</div>
+          <div class="target-emoji" id="targetEmoji">👍</div>
+          <div class="target-name" id="targetName">ยกนิ้วโป้ง (Thumbs Up)</div>
+          <div class="target-hint" id="targetHint">กำมือแล้วยกเฉพาะนิ้วโป้งขึ้น</div>
+        </div>
+
+        <!-- VS Bridge & Hold Progress Circle -->
+        <div class="bridge-zone">
+          <div class="hold-circle" id="holdCircle">
+            <svg class="progress-ring" width="120" height="120">
+              <circle class="progress-ring-bg" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+              <circle class="progress-ring-fill" id="progressRingFill" stroke="#00ff88" stroke-width="8" stroke-dasharray="314.159" stroke-dashoffset="314.159" stroke-linecap="round" fill="transparent" r="50" cx="60" cy="60"/>
+            </svg>
+            <div class="hold-text" id="holdText">ค้างไว้<br><span id="holdPercent">0%</span></div>
+          </div>
+          <div class="match-indicator" id="matchIndicator">⏳ กำลังตรวจจับ...</div>
+        </div>
+
+        <!-- Detected Player Hand Box (ท่าที่กล้องเห็น) -->
+        <div class="player-detected-card" id="playerCard">
+          <div class="card-badge">🖐️ ท่ามือของคุณตอนนี้</div>
+          <div class="detected-emoji" id="detectedEmoji">❓</div>
+          <div class="detected-name" id="detectedName">ยกมือขึ้นมาหน้ากล้อง</div>
+          <div class="accuracy-bar-box">
+            <div class="accuracy-fill" id="accuracyFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Mouse / Touch Alternative Buttons (Visible in Mouse Mode or Fallback) -->
+      <div class="mouse-panel" id="mousePanel">
+        <div class="panel-label">โหมดเมาส์ / จอสัมผัส: คลิกเลือกท่าที่ตรงกับโจทย์</div>
+        <div class="emoji-grid-buttons" id="emojiGridButtons"></div>
+      </div>
+
+    </div>
+
+    <!-- Start / Tutorial Screen Overlay -->
+    <div class="overlay-screen" id="startScreen">
+      <div class="modal-card">
+        <div class="kicker-banner">IT MAEJO 2570 • REAL-TIME VISION</div>
+        <h1 class="modal-title">🎭 EMOJI HAND MIMIC</h1>
+        <p class="modal-desc">
+          ระบบจะ <strong>สุ่มอิโมจิท่าทางมือ</strong> ขึ้นมาบนหน้าจอ ให้คุณ <b>ทำท่ามือเลียนแบบให้เหมือนที่สุด</b> หน้ากล้องเว็บแคม!
+        </p>
+
+        <div class="emoji-preview-row">
+          <span>👍</span><span>✌️</span><span>🖐️</span><span>✊</span><span>👌</span><span>🤟</span><span>☝️</span><span>🤙</span>
+        </div>
+
+        <div class="rules-grid">
+          <div class="rule-item good">
+            <span class="rule-icon">👀 🖐️</span>
+            <div class="rule-text"><strong>ดูโจทย์แล้วทำตาม:</strong> ยกมือขึ้นมาหน้ากล้องและทำท่าให้ตรงกับอิโมจิที่สุ่มขึ้นมา</div>
+          </div>
+          <div class="rule-item target">
+            <span class="rule-icon">⏱️ 🎯</span>
+            <div class="rule-text"><strong>เก๊กท่าค้างไว้:</strong> เมื่อทำท่าถูก เก๊กท่าค้างไว้ <b>0.6 วินาที</b> เพื่อยืนยันความถูกต้องและรับ +100 แต้มคอมโบ!</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnStartGame">🎭 เริ่มประลองท่ามือ! (Start Game)</button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen Overlay -->
+    <div class="overlay-screen hidden" id="gameOverScreen">
+      <div class="modal-card">
+        <div class="kicker-banner" id="gameOverBadge">TIME'S UP!</div>
+        <h1 class="modal-title" id="gameOverTitle">🏆 ยอดเยี่ยมมาก ปรมาจารย์ท่ามือ!</h1>
+        <p class="modal-desc" id="gameOverDesc">คุณสามารถเลียนแบบท่าทางมือของอิโมจิได้อย่างว่องไวและแม่นยำ</p>
+
+        <div class="stat-summary">
+          <div class="stat-col">
+            <div class="stat-num" id="finalScore">0</div>
+            <div class="stat-lbl">คะแนนรวม</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalMatched">0</div>
+            <div class="stat-lbl">ท่าที่ทำสำเร็จ</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalMaxStreak">0</div>
+            <div class="stat-lbl">คอมโบสูงสุด</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnRestartGame">🔁 เล่นใหม่อีกครั้ง (Play Again)</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

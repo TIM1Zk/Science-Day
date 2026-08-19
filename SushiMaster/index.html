@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sushi Master: AI Chopstick Pinch — IT Maejo Open House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe Hands & Camera CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="kicker">Maejo University • IT Open House</span>
+      <h1 class="header-title">🍣 SUSHI MASTER: AI CHOPSTICKS</h1>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">กำลังเปิดกล้อง AI Hands...</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="header-controls">
+      <button class="btn btn-mode" id="modeToggleBtn" title="สลับโหมดควบคุม">🖐️ โหมด: ตะเกียบมือ AI</button>
+      <a href="../index.html" class="btn btn-home" style="text-decoration: none;">🏠 หน้าหลัก</a>
+    </div>
+  </header>
+
+  <!-- Main Game Stage -->
+  <main class="game-container">
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top In-Game HUD -->
+    <div class="game-hud" id="gameHud">
+      
+      <!-- Current Customer Order Target -->
+      <div class="order-board" id="orderBoard">
+        <div class="order-title">🎯 ออเดอร์ลูกค้า (CURRENT ORDER):</div>
+        <div class="order-target-box" id="orderTargetBox">
+          <span class="order-icon" id="orderIcon">🍣</span>
+          <div class="order-info">
+            <div class="order-name" id="orderName">แซลมอนนิกิริ (Salmon)</div>
+            <div class="order-progress" id="orderProgress">เป้าหมาย: 0 / 1 ชิ้น</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score & Time Box -->
+      <div class="hud-stats">
+        <div class="hud-chip score-chip">
+          <span class="chip-label">คะแนน</span>
+          <span class="chip-val" id="scoreVal">0</span>
+        </div>
+        <div class="hud-chip time-chip">
+          <span class="chip-label">เวลา</span>
+          <span class="chip-val" id="timerVal">60</span>
+        </div>
+        <div class="hud-chip combo-chip">
+          <span class="chip-label">เสิร์ฟสำเร็จ</span>
+          <span class="chip-val" id="servedVal">0 จาน</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Start / Tutorial Screen Overlay -->
+    <div class="overlay-screen" id="startScreen">
+      <div class="modal-card">
+        <div class="kicker-banner">IT MAEJO 2570 • SPECIAL INTERACTIVE</div>
+        <h1 class="modal-title">🍣 SUSHI MASTER CHEF</h1>
+        <p class="modal-desc">
+          สวมบทบาทเป็น <strong>เชฟซูชิขั้นเทพ</strong> ใช้ <b>"นิ้วมือทำท่าคีบตะเกียบ" (Pinch)</b> หนีบซูชิจากสายพานหมุน แล้วนำมาวางลงบนจานเสิร์ฟของลูกค้าให้ถูกต้อง!
+        </p>
+
+        <div class="rules-grid">
+          <div class="rule-item good">
+            <span class="rule-icon">🥢 👌</span>
+            <div class="rule-text"><strong>วิธีคีบ:</strong> จีบนิ้วชี้ชิดนิ้วโป้ง (Pinch) เพื่อคีบซูชิ แล้วลากมาปล่อยลง <b>"จานเสิร์ฟสีทอง"</b> ด้านล่าง</div>
+          </div>
+          <div class="rule-item target">
+            <span class="rule-icon">🍣 🍙 🍱</span>
+            <div class="rule-text"><strong>คีบตามออเดอร์:</strong> สังเกตป้ายออเดอร์ด้านบน คีบเฉพาะเมนูที่ลูกค้าสั่งเพื่อรับคะแนน +150 แต้ม! (คีบผิดจะถูกหัก 50 แต้ม)</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnStartGame">🥢 เริ่มเปิดร้านซูชิ! (Start Chef)</button>
+      </div>
+    </div>
+
+    <!-- Game Over / Victory Modal -->
+    <div class="overlay-screen hidden" id="gameOverScreen">
+      <div class="modal-card">
+        <div class="kicker-banner" id="gameOverBadge">TIME'S UP!</div>
+        <h1 class="modal-title" id="gameOverTitle">🏆 ยอดเยี่ยมมาก เชฟมือทอง!</h1>
+        <p class="modal-desc" id="gameOverDesc">คุณสามารถคีบเสิร์ฟซูชิให้ลูกค้าได้อย่างรวดเร็วและแม่นยำ</p>
+
+        <div class="stat-summary">
+          <div class="stat-col">
+            <div class="stat-num" id="finalScore">0</div>
+            <div class="stat-lbl">คะแนนรวม</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalServed">0</div>
+            <div class="stat-lbl">จานที่เสิร์ฟถูกต้อง</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalAccuracy">100%</div>
+            <div class="stat-lbl">ความแม่นยำ</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnRestartGame">🔁 เปิดร้านรอบใหม่ (Play Again)</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

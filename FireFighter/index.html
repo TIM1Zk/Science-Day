@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Firefighter: One-Hand Water Cannon — IT Maejo Open House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe Hands & Camera CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="kicker">Maejo University • IT Open House</span>
+      <h1 class="header-title">🪭 CYBER WIND FAN: พัดมือดับไฟ</h1>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">กำลังเปิดกล้อง AI Hands...</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="header-controls">
+      <button class="btn btn-mode" id="modeToggleBtn" title="สลับโหมดควบคุม">🖐️ โหมด: พัดลมมือเดียว AI</button>
+      <a href="../index.html" class="btn btn-home" style="text-decoration: none;">🏠 หน้าหลัก</a>
+    </div>
+  </header>
+
+  <!-- Main Game Stage Canvas -->
+  <main class="game-container">
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top In-Game HUD -->
+    <div class="game-hud" id="gameHud">
+      <div class="hud-box score-box">
+        <span class="hud-label">คะแนนดับเพลิง</span>
+        <span class="hud-value" id="scoreVal">0</span>
+      </div>
+
+      <div class="hud-box timer-box">
+        <span class="hud-label">เวลาที่เหลือ</span>
+        <span class="hud-value" id="timerVal">45</span>
+      </div>
+
+      <div class="hud-box fires-box">
+        <span class="hud-label">ไฟที่ดับได้</span>
+        <span class="hud-value" id="extinguishedVal">0 กอง</span>
+      </div>
+
+      <div class="hud-box water-box">
+        <span class="hud-label">สถานะแรงลม</span>
+        <span class="hud-status" id="waterStatus">🖐️ โบกสะบัดมือพัดลมได้เลย!</span>
+      </div>
+    </div>
+
+    <!-- Start Screen Overlay -->
+    <div class="overlay-screen" id="startScreen">
+      <div class="modal-card">
+        <div class="kicker-banner">IT MAEJO 2570 • EMERGENCY RESPONSE</div>
+        <h1 class="modal-title">🪭 พัดมือดับไฟ (CYBER WIND FAN)</h1>
+        <p class="modal-desc">
+          สวมบทบาทเป็น <strong>จอมยุทธ์พัดดับเพลิง</strong> ใช้ <b>"มือข้างเดียวโบกสะบัดพัดลม"</b> เพื่อสร้างลมกรรโชกแรงเป่าดับกองไฟที่กำลังลุกไหม้ให้มอดดับ!
+        </p>
+
+        <div class="rules-grid">
+          <div class="rule-item good">
+            <span class="rule-icon">✊ 🪭 💨</span>
+            <div class="rule-text"><strong>วิธีจับพัดและสะบัดลม (มือเดียว):</strong> 
+              <b>กำมือจับด้ามพัดข้างลำตัวหรือด้านหน้า</b> แล้วสะบัดมือไป-มาเร็วๆ ยิ่งโบกมือพัดเร็ว พลังลมยิ่งแรง ไฟจะยิ่งดับไวขึ้น!
+            </div>
+          </div>
+          <div class="rule-item target">
+            <span class="rule-icon">🔥 🪭</span>
+            <div class="rule-text"><strong>พัดดับไฟต่อเนื่อง:</strong> นำพัดลมไปจ่อใกล้กองไฟแล้วสะบัดมือ ดับไฟให้ได้มากที่สุดภายใน 45 วินาที</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnStartGame">🪭 เริ่มสะบัดมือดับไฟ! (Start Fanning)</button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen Overlay -->
+    <div class="overlay-screen hidden" id="gameOverScreen">
+      <div class="modal-card">
+        <div class="kicker-banner" id="gameOverBadge">MISSION COMPLETED</div>
+        <h1 class="modal-title" id="gameOverTitle">🏆 ภารกิจดับเพลิงสำเร็จ!</h1>
+        <p class="modal-desc" id="gameOverDesc">คุณสามารถควบคุมสถานการณ์และดับไฟที่ลุกลามได้อย่างปลอดภัย</p>
+
+        <div class="stat-summary">
+          <div class="stat-col">
+            <div class="stat-num" id="finalScore">0</div>
+            <div class="stat-lbl">คะแนนรวม</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalExtinguished">0</div>
+            <div class="stat-lbl">ไฟที่ดับได้</div>
+          </div>
+          <div class="stat-col">
+            <div class="stat-num" id="finalRank">S</div>
+            <div class="stat-lbl">ระดับเชี่ยวชาญ</div>
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnRestartGame">🔁 เล่นภารกิจใหม่ (Play Again)</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
