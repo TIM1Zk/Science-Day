@@ -65,7 +65,7 @@ let cursorX = CANVAS_WIDTH / 2;
 let cursorY = CANVAS_HEIGHT / 2;
 let isLaserActive = false; // pinch or mouse down
 let handDetected = false;
-let isMouseMode = true; // default mouse enabled simultaneously
+let isMouseMode = false; // false = Camera AI mode, true = Mouse/Touch mode (Camera turned off)
 
 // Item Types (Bugs vs Clean Code Features)
 const ITEM_TYPES = [
@@ -413,7 +413,7 @@ function draw() {
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   // Draw semi-transparent mirrored webcam background when camera is active so player sees themselves
-  if (video && video.readyState >= 2) {
+  if (!isMouseMode && video && video.readyState >= 2) {
     ctx.save();
     ctx.globalAlpha = 0.22; // subtle cyberpunk AR overlay
     ctx.translate(CANVAS_WIDTH, 0);
@@ -857,6 +857,14 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
       startGame(diff);
     }
   });
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (isMouseMode || !handDetected) {
+    const rect = canvas.getBoundingClientRect();
+    cursorX = ((e.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
+    cursorY = ((e.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+  }
 });
 
 canvas.addEventListener('mousedown', (e) => {
