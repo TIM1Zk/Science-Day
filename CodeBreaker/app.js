@@ -107,17 +107,34 @@
         const muteBtn = document.getElementById('mute-btn');
         const modeToggleBtn = document.getElementById('mode-toggle-btn');
         let isMouseMode = false; // false = Camera AI mode, true = Mouse/Touch mode
+        let cameraInstance = null;
+        let mediaStream = null;
 
         // --- Mode Toggle Handler ---
         if (modeToggleBtn) {
-            modeToggleBtn.addEventListener('click', (e) => {
+            modeToggleBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 isMouseMode = !isMouseMode;
                 if (isMouseMode) {
                     modeToggleBtn.classList.add('mouse-mode');
                     modeToggleBtn.innerText = "🖱️ โหมด: เมาส์ / สัมผัส";
                     statusDot.classList.add('active');
-                    statusText.innerText = "MOUSE MODE ACTIVE";
+                    statusText.innerText = "MOUSE MODE (CAMERA OFF)";
+                    
+                    // Stop Camera and Webcam Stream completely
+                    if (cameraInstance) {
+                        try { await cameraInstance.stop(); } catch(err) {}
+                    }
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                        mediaStream = null;
+                    }
+                    if (videoElement) {
+                        videoElement.srcObject = null;
+                        videoElement.style.display = 'none';
+                    }
+
+                    isHandVisible = false;
                     
                     // Enable start button immediately if in init state
                     const btnStart = document.getElementById('btn-start');
@@ -135,13 +152,15 @@
                 } else {
                     modeToggleBtn.classList.remove('mouse-mode');
                     modeToggleBtn.innerText = "🖐️ โหมด: กล้อง AI";
-                    if (isHandVisible) {
-                        statusDot.classList.add('active');
-                        statusText.innerText = "HAND DETECTED";
-                    } else {
-                        statusDot.classList.remove('active');
-                        statusText.innerText = "SHOW YOUR HAND";
+                    statusDot.classList.remove('active');
+                    statusText.innerText = "STARTING CAMERA...";
+                    if (videoElement) {
+                        videoElement.style.display = 'block';
                     }
+                    
+                    // Restart Camera
+                    initCamera();
+
                     const btnStart = document.getElementById('btn-start');
                     if (btnStart && !isHandVisible) {
                         btnStart.style.opacity = "0.5";
@@ -200,10 +219,10 @@
         // --- Camera / Hand Tracking Init ---
         async function initCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                mediaStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }
                 });
-                videoElement.srcObject = stream;
+                videoElement.srcObject = mediaStream;
                 statusText.innerText = "LOADING AI MODEL...";
                 initHandTracking();
             } catch (err) {
@@ -253,12 +272,20 @@
 
             hands.onResults(processHandResults);
 
-            const camera = new Camera(videoElement, {
-                onFrame: async () => { await hands.send({ image: videoElement }); },
+            cameraInstance = new Camera(videoElement, {
+                onFrame: async () => {
+                    if (!isMouseMode && hands) {
+                        await hands.send({ image: videoElement });
+                    }
+                },
                 width: 1280,
                 height: 720
             });
-            camera.start().catch(() => {
+            cameraInstance.start().then(() => {
+                if (!isMouseMode) {
+                    statusText.innerText = "CAMERA READY - SHOW HAND";
+                }
+            }).catch(() => {
                 statusText.innerText = "CAMERA FAILED - TAP MODE";
                 isMouseMode = true;
                 if (modeToggleBtn) {
