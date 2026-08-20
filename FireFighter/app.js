@@ -48,8 +48,14 @@ function initAudio() {
   }
 }
 
+let lastWhooshTime = 0;
+
 function playWindWhooshSound(intensity = 1) {
   if (!audioCtx) return;
+  const now = performance.now();
+  if (now - lastWhooshTime < 160) return; // ป้องกันการสร้าง Web Audio Oscillator ถี่เกินไปจนบราวเซอร์ค้าง
+  lastWhooshTime = now;
+
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -536,10 +542,6 @@ function onHandResults(results) {
     // Smooth position tracking
     handX += (targetX - handX) * 0.8;
     handY += (targetY - handY) * 0.8;
-
-    if (isPlaying) {
-      processFanningMotion();
-    }
   } else {
     handDetected = false;
     statusDot.classList.remove('active');
@@ -655,6 +657,7 @@ function gameLoop(now) {
   // Update Game Physics
   if (isPlaying) {
     updateFireSpawner(now);
+    processFanningMotion();
   }
 
   // Draw Burning Fires

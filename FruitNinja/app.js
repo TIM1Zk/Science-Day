@@ -48,8 +48,14 @@ function initAudio() {
   }
 }
 
+let lastSliceSoundTime = 0;
+
 function playSliceSound() {
   if (!audioCtx) return;
+  const now = performance.now();
+  if (now - lastSliceSoundTime < 60) return; // Throttle to prevent Web Audio thread choking
+  lastSliceSoundTime = now;
+
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -498,7 +504,6 @@ function onHandResults(results) {
     const bladeY = indexTip.y * CANVAS_HEIGHT;
 
     addBladePoint(bladeX, bladeY);
-    if (isPlaying) checkBladeSlices();
   } else {
     handDetected = false;
     statusDot.classList.remove('active');
@@ -614,6 +619,7 @@ function gameLoop(now) {
   // Spawner & Physics
   if (isPlaying) {
     updateSpawner(now);
+    checkBladeSlices();
   }
 
   // Update & Draw Fruits
