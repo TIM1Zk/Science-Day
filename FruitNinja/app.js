@@ -144,13 +144,13 @@ class FlyingFruit {
     this.x = CANVAS_WIDTH * 0.15 + Math.random() * (CANVAS_WIDTH * 0.7);
     this.y = CANVAS_HEIGHT + this.radius;
 
-    // Physics
-    const targetApexX = CANVAS_WIDTH * 0.2 + Math.random() * (CANVAS_WIDTH * 0.6);
-    this.vx = (targetApexX - this.x) * (0.015 + Math.random() * 0.01);
-    this.vy = -(14 + Math.random() * 6); // Upward impulse
-    this.gravity = 0.32;
+    // Physics (Adjusted to be slower & easier to slice)
+    const targetApexX = CANVAS_WIDTH * 0.25 + Math.random() * (CANVAS_WIDTH * 0.5);
+    this.vx = (targetApexX - this.x) * (0.010 + Math.random() * 0.008);
+    this.vy = -(10.5 + Math.random() * 3.5); // Slower upward launch (from -14~-20 to -10.5~-14)
+    this.gravity = 0.19; // Lower gravity for floatier, slower flight (from 0.32 to 0.19)
     this.rotation = Math.random() * Math.PI * 2;
-    this.vRot = (Math.random() - 0.5) * 0.08;
+    this.vRot = (Math.random() - 0.5) * 0.04;
 
     this.isSliced = false;
     this.splitParts = [];
@@ -316,16 +316,16 @@ function checkBladeSlices() {
 }
 
 // =========================================================
-// SPAWNING SYSTEM
+// SPAWNING SYSTEM (Relaxed & Floatier Pacing)
 // =========================================================
-let spawnInterval = 1100;
+let spawnInterval = 1450; // ปรับให้ผลไม้เกิดเว้นช่วงพอเหมาะ ไม่เร็วหรือถี่เกินไป
 let lastSpawnTime = 0;
 
 function updateSpawner(now) {
   if (now - lastSpawnTime > spawnInterval) {
     lastSpawnTime = now;
-    // Launch 1 to 3 fruits
-    const count = 1 + Math.floor(Math.random() * (timeLeft < 20 ? 3 : 2));
+    // Launch 1 to 2 fruits
+    const count = 1 + Math.floor(Math.random() * (timeLeft < 15 ? 2 : 1.6));
     for (let i = 0; i < count; i++) {
       activeItems.push(new FlyingFruit());
     }
