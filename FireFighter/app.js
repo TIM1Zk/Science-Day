@@ -514,6 +514,8 @@ canvas.addEventListener('touchmove', (e) => {
 // =========================================================
 // MEDIAPIPE ONE-HAND TRACKING (Hand Grip & Wave Fan)
 // =========================================================
+let isProcessingHandFrame = false;
+
 function onHandResults(results) {
   if (isMouseMode) return;
 
@@ -556,8 +558,8 @@ function initCamera() {
     handsInstance.setOptions({
       maxNumHands: 1, // STRICTLY ONE-HAND (มือเดียว)
       modelComplexity: 0,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55
     });
 
     handsInstance.onResults(onHandResults);
@@ -567,8 +569,15 @@ function initCamera() {
     if (!cameraInstance) {
       cameraInstance = new Camera(video, {
         onFrame: async () => {
-          if (!isMouseMode && handsInstance) {
+          if (isMouseMode || !handsInstance) return;
+          if (isProcessingHandFrame) return; // Drop frame to maintain 60 FPS
+          isProcessingHandFrame = true;
+          try {
             await handsInstance.send({ image: video });
+          } catch(e) {
+            console.warn(e);
+          } finally {
+            isProcessingHandFrame = false;
           }
         },
         width: 640,

@@ -480,6 +480,8 @@ window.addEventListener('touchend', () => {
 // =========================================================
 // MEDIAPIPE HANDS TRACKING (Blade on Index Fingertip)
 // =========================================================
+let isProcessingHandFrame = false;
+
 function onHandResults(results) {
   if (isMouseMode) return;
 
@@ -515,8 +517,8 @@ function initCamera() {
     handsInstance.setOptions({
       maxNumHands: 1,
       modelComplexity: 0,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55
     });
 
     handsInstance.onResults(onHandResults);
@@ -526,8 +528,15 @@ function initCamera() {
     if (!cameraInstance) {
       cameraInstance = new Camera(video, {
         onFrame: async () => {
-          if (!isMouseMode && handsInstance) {
+          if (isMouseMode || !handsInstance) return;
+          if (isProcessingHandFrame) return; // Drop frame if still processing to prevent GPU/CPU choke
+          isProcessingHandFrame = true;
+          try {
             await handsInstance.send({ image: video });
+          } catch(e) {
+            console.warn(e);
+          } finally {
+            isProcessingHandFrame = false;
           }
         },
         width: 640,
@@ -587,7 +596,7 @@ modeToggleBtn.addEventListener('click', () => {
 });
 
 // =========================================================
-// MAIN RENDER LOOP
+// MAIN RENDER LOOP (High Performance)
 // =========================================================
 function gameLoop(now) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);

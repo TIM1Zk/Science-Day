@@ -643,6 +643,8 @@ function onHandResults(results) {
   }
 }
 
+let isProcessingHandFrame = false;
+
 function initCamera() {
   if (isMouseMode) return;
 
@@ -654,8 +656,8 @@ function initCamera() {
     handsInstance.setOptions({
       maxNumHands: 1,
       modelComplexity: 0,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.55
     });
 
     handsInstance.onResults(onHandResults);
@@ -665,8 +667,15 @@ function initCamera() {
     if (!cameraInstance) {
       cameraInstance = new Camera(video, {
         onFrame: async () => {
-          if (!isMouseMode && handsInstance) {
+          if (isMouseMode || !handsInstance) return;
+          if (isProcessingHandFrame) return;
+          isProcessingHandFrame = true;
+          try {
             await handsInstance.send({ image: video });
+          } catch(e) {
+            console.warn(e);
+          } finally {
+            isProcessingHandFrame = false;
           }
         },
         width: 640,
