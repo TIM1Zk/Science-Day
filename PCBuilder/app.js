@@ -637,7 +637,7 @@ async function initCamera(){
 
     if(!handsInstance){
       handsInstance = new Hands({
-        locateFile: (file) => `../libs/mediapipe/hands/${file}`
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
       });
       handsInstance.setOptions({
         maxNumHands:1,
