@@ -180,10 +180,8 @@ class ConveyorSushi {
     ctx.arc(0, 0, this.radius + 6, 0, Math.PI * 2);
     ctx.fillStyle = '#1e293b';
     ctx.fill();
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
     ctx.strokeStyle = this.isGrabbed ? '#00f0ff' : '#475569';
-    ctx.shadowColor = this.isGrabbed ? '#00f0ff' : 'transparent';
-    ctx.shadowBlur = this.isGrabbed ? 20 : 0;
     ctx.stroke();
 
     // Plate Inner Ring
@@ -450,11 +448,9 @@ function drawChopsticks() {
   const baseOffset = 140;
 
   // Left Chopstick (from top-left of hand to pinch tip)
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 5;
   ctx.lineCap = 'round';
   ctx.strokeStyle = '#f59e0b';
-  ctx.shadowColor = '#f59e0b';
-  ctx.shadowBlur = isPinching ? 16 : 6;
 
   // Chopstick 1
   ctx.beginPath();
@@ -470,10 +466,8 @@ function drawChopsticks() {
 
   // Chopstick Tips Grip Effect
   ctx.beginPath();
-  ctx.arc(pinchX, pinchY, isPinching ? 10 : 6, 0, Math.PI * 2);
+  ctx.arc(pinchX, pinchY, isPinching ? 8 : 5, 0, Math.PI * 2);
   ctx.fillStyle = isPinching ? '#00ff88' : '#00f0ff';
-  ctx.shadowColor = isPinching ? '#00ff88' : '#00f0ff';
-  ctx.shadowBlur = 14;
   ctx.fill();
 
   ctx.restore();

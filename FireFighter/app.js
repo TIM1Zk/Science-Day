@@ -143,8 +143,8 @@ class BurningFire {
     this.hp -= intensity * 4.2; // Damage based on fanning strength!
     this.tilt = windDirX * 0.6; // Flame tilts with wind
 
-    // Spawn Smoke & Sparks
-    if (Math.random() < 0.7) {
+    // Spawn Smoke & Sparks (limit max steam particles)
+    if (steamParticles.length < 20 && Math.random() < 0.4) {
       steamParticles.push(new SteamParticle(this.x + (Math.random() - 0.5) * this.radius, this.y + (Math.random() - 0.5) * this.radius));
     }
 
@@ -154,8 +154,8 @@ class BurningFire {
       totalExtinguished++;
       score += 150;
 
-      // Extinguished burst
-      for (let i = 0; i < 28; i++) {
+      // Extinguished burst (lightweight)
+      for (let i = 0; i < 12; i++) {
         steamParticles.push(new SteamParticle(this.x, this.y));
       }
 
@@ -183,11 +183,7 @@ class BurningFire {
     ctx.translate(this.x, this.y);
     ctx.rotate(this.tilt);
 
-    // Glowing Flame Aura
-    ctx.shadowColor = '#ff5722';
-    ctx.shadowBlur = 26 * hpRatio;
-
-    // Fire Emoji Graphic
+    // Fire Emoji Graphic (remove heavy shadowBlur)
     ctx.font = `${flameSize * (0.5 + hpRatio * 0.85)}px Kanit, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -215,28 +211,26 @@ class WindParticle {
     this.y = y;
     this.vx = vx * 0.8 + (Math.random() - 0.5) * 4;
     this.vy = vy * 0.8 + (Math.random() - 0.5) * 4;
-    this.length = 16 + Math.random() * 26;
-    this.alpha = 0.9;
+    this.length = 14 + Math.random() * 18;
+    this.alpha = 0.85;
     this.color = Math.random() < 0.5 ? 'rgba(0, 240, 255, ' : 'rgba(255, 255, 255, ';
   }
 
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.alpha -= 0.035;
+    this.alpha -= 0.045;
   }
 
   draw() {
     if (this.alpha <= 0) return;
     ctx.save();
     ctx.strokeStyle = `${this.color}${this.alpha})`;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 8;
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);
-    ctx.lineTo(this.x - this.vx * 1.5, this.y - this.vy * 1.5);
+    ctx.lineTo(this.x - this.vx * 1.2, this.y - this.vy * 1.2);
     ctx.stroke();
     ctx.restore();
   }
@@ -247,17 +241,17 @@ class SteamParticle {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.vx = (Math.random() - 0.5) * 3;
-    this.vy = -(1.5 + Math.random() * 3);
-    this.size = 10 + Math.random() * 16;
-    this.alpha = 0.85;
+    this.vx = (Math.random() - 0.5) * 2;
+    this.vy = -(1.2 + Math.random() * 2);
+    this.size = 8 + Math.random() * 12;
+    this.alpha = 0.8;
   }
 
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.size += 0.4;
-    this.alpha -= 0.022;
+    this.size += 0.3;
+    this.alpha -= 0.032;
   }
 
   draw() {
@@ -294,10 +288,11 @@ function processFanningMotion() {
     // Play whoosh sound
     playWindWhooshSound(handSpeed / 25);
 
-    // Spawn 6 wind trail particles
-    for (let i = 0; i < 6; i++) {
-      const offsetX = (Math.random() - 0.5) * 60;
-      const offsetY = (Math.random() - 0.5) * 60;
+    // Spawn wind trail particles (capped to 3 for low-spec performance)
+    const count = windParticles.length > 15 ? 1 : 3;
+    for (let i = 0; i < count; i++) {
+      const offsetX = (Math.random() - 0.5) * 40;
+      const offsetY = (Math.random() - 0.5) * 40;
       windParticles.push(new WindParticle(handX + offsetX, handY + offsetY, dx * 0.7, dy * 0.7));
     }
 
@@ -435,26 +430,22 @@ function drawCyberFan() {
   if (isFanningHard) {
     ctx.beginPath();
     ctx.arc(0, -50, 75, -Math.PI * 0.75, -Math.PI * 0.25);
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = '#00f0ff';
-    ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 24;
     ctx.stroke();
 
     // Wind shockwave ripple
     ctx.beginPath();
     ctx.arc(0, -65, 95, -Math.PI * 0.7, -Math.PI * 0.3);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.stroke();
   }
 
   // 2. Draw Fan Handle (ด้ามจับพัด ที่ผู้เล่นกำลังถืออยู่)
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 7;
   ctx.lineCap = 'round';
   ctx.strokeStyle = '#f59e0b';
-  ctx.shadowColor = '#f59e0b';
-  ctx.shadowBlur = 8;
   ctx.beginPath();
   ctx.moveTo(0, 35);
   ctx.lineTo(0, -10);
@@ -467,16 +458,14 @@ function drawCyberFan() {
   ctx.closePath();
   ctx.fillStyle = isFanningHard ? 'rgba(0, 240, 255, 0.45)' : 'rgba(14, 165, 233, 0.35)';
   ctx.fill();
-  ctx.lineWidth = 3.5;
+  ctx.lineWidth = 2.5;
   ctx.strokeStyle = isFanningHard ? '#00ff88' : '#00f0ff';
-  ctx.shadowColor = isFanningHard ? '#00ff88' : '#00f0ff';
-  ctx.shadowBlur = 18;
   ctx.stroke();
 
   // Fan rib lines (ซี่โครงพัด)
   const angles = [-0.75, -0.6, -0.5, -0.4, -0.25];
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
   angles.forEach(a => {
     ctx.beginPath();
     ctx.moveTo(0, -10);
@@ -486,10 +475,8 @@ function drawCyberFan() {
 
   // Hand Grip Ring (ตำแหน่งกำมือจับด้ามพัด)
   ctx.beginPath();
-  ctx.arc(0, 20, 12, 0, Math.PI * 2);
+  ctx.arc(0, 20, 10, 0, Math.PI * 2);
   ctx.fillStyle = isFanningHard ? '#00ff88' : '#00b4d8';
-  ctx.shadowColor = '#00f0ff';
-  ctx.shadowBlur = 14;
   ctx.fill();
 
   ctx.restore();

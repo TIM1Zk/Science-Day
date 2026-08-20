@@ -108,7 +108,7 @@ let handDetected = false;
 
 // Blade Trails (Hand & Mouse)
 let bladeTrail = []; // Array of points {x, y, age}
-const MAX_TRAIL_LENGTH = 18;
+const MAX_TRAIL_LENGTH = 12;
 
 // Fruits / Items & Particles
 let activeItems = [];
@@ -187,8 +187,9 @@ class FlyingFruit {
       { x: this.x, y: this.y, vx: this.vx + spreadVx, vy: this.vy + spreadVy - 2, rotation: this.rotation, vRot: 0.1, alpha: 1 }
     ];
 
-    // Spawn splash juice particles
-    for (let i = 0; i < 20; i++) {
+    // Spawn lightweight splash juice particles (capped to 10 for low-spec performance)
+    const splashCount = particles.length > 25 ? 4 : 10;
+    for (let i = 0; i < splashCount; i++) {
       particles.push(new SplashParticle(this.x, this.y, this.def.juiceColor));
     }
   }
@@ -198,10 +199,6 @@ class FlyingFruit {
     if (!this.isSliced) {
       ctx.translate(this.x, this.y);
       ctx.rotate(this.rotation);
-
-      // Glow halo
-      ctx.shadowColor = this.def.color;
-      ctx.shadowBlur = 16;
 
       ctx.font = `${this.radius * 1.8}px Kanit, sans-serif`;
       ctx.textAlign = 'center';
@@ -232,11 +229,11 @@ class SplashParticle {
     this.y = y;
     this.color = color;
     const angle = Math.random() * Math.PI * 2;
-    const speed = 3 + Math.random() * 8;
+    const speed = 2.5 + Math.random() * 6;
     this.vx = Math.cos(angle) * speed;
     this.vy = Math.sin(angle) * speed;
-    this.gravity = 0.25;
-    this.size = 4 + Math.random() * 6;
+    this.gravity = 0.28;
+    this.size = 4 + Math.random() * 4;
     this.alpha = 1;
   }
 
@@ -244,7 +241,7 @@ class SplashParticle {
     this.x += this.vx;
     this.y += this.vy;
     this.vy += this.gravity;
-    this.alpha -= 0.024;
+    this.alpha -= 0.038;
   }
 
   draw() {
@@ -415,17 +412,17 @@ function drawBladeTrail() {
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
 
-    ctx.lineWidth = progress * 16;
+    ctx.lineWidth = progress * 14;
     ctx.strokeStyle = `rgba(0, 240, 255, ${progress * 0.85})`;
     ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 6;
     ctx.stroke();
 
     // Inner bright core
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
-    ctx.lineWidth = progress * 6;
+    ctx.lineWidth = progress * 5;
     ctx.strokeStyle = '#ffffff';
     ctx.shadowBlur = 0;
     ctx.stroke();
