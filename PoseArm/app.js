@@ -412,7 +412,7 @@ function onResults(results) {
 async function initCamera() {
     sizeCanvas();
 
-    const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
 
     pose.setOptions({
         modelComplexity: 1,            // แม่นขึ้นกว่าเดิมชัดเจนตรงตำแหน่งข้อมือ
